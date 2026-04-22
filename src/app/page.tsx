@@ -766,7 +766,7 @@ export default function Home() {
                     onClick={createNewFile}
                     className="p-2 transition-all duration-200 min-w-[40px] min-h-[40px] flex items-center justify-center"
                     style={{
-                      color: 'var(--foreground)'
+                      color: '#8141e6'
                     }}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.opacity = '0.7';
@@ -785,7 +785,7 @@ export default function Home() {
                     onClick={handleCopyCode}
                     className="p-2 transition-all duration-200 min-w-[40px] min-h-[40px] flex items-center justify-center"
                     style={{
-                      color: 'var(--foreground)'
+                      color: '#8141e6'
                     }}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.opacity = '0.7';
@@ -836,7 +836,7 @@ export default function Home() {
                     onClick={handleDownloadCode}
                     className="p-2 transition-all duration-200 min-w-[40px] min-h-[40px] flex items-center justify-center"
                     style={{
-                      color: 'var(--foreground)'
+                      color: '#8141e6'
                     }}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.opacity = '0.7';
@@ -857,7 +857,7 @@ export default function Home() {
                     disabled={isLoading}
                     className="p-2 transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50 min-w-[40px] min-h-[40px] flex items-center justify-center"
                     style={{
-                      color: 'var(--foreground)'
+                      color: '#8141e6'
                     }}
                     onMouseEnter={(e) => {
                       if (!isLoading) {
@@ -913,7 +913,7 @@ export default function Home() {
                             style={{
                               fontSize: '9px',
                               fontWeight: 'bold',
-                              color: file.id === activeFileId ? '#fbbf24' : 'currentColor'
+                              color: file.id === activeFileId ? '#8141e6' : 'currentColor'
                             }}
                           >
                             &lt;/&gt;
@@ -923,7 +923,7 @@ export default function Home() {
                             style={{
                               fontSize: '10px',
                               fontWeight: 'bold',
-                              color: file.id === activeFileId ? '#fbbf24' : 'currentColor'
+                              color: file.id === activeFileId ? '#8141e6' : 'currentColor'
                             }}
                           >
                             ॐ
@@ -969,7 +969,7 @@ export default function Home() {
                             className={getLanguageIcon(file.language)}
                             style={{
                               fontSize: '10px',
-                              color: file.id === activeFileId ? '#fbbf24' : 'currentColor'
+                              color: file.id === activeFileId ? '#8141e6' : 'currentColor'
                             }}
                           ></i>
                         )}
@@ -1085,7 +1085,7 @@ export default function Home() {
                         onClick={createNewFile}
                         className="p-2 transition-all duration-200 min-w-[40px] min-h-[40px] flex items-center justify-center"
                         style={{
-                          color: 'var(--foreground)'
+                          color: '#8141e6'
                         }}
                         onMouseEnter={(e) => {
                           e.currentTarget.style.opacity = '0.7';
@@ -1104,7 +1104,7 @@ export default function Home() {
                         onClick={handleCopyCode}
                         className="p-2 transition-all duration-200 min-w-[40px] min-h-[40px] flex items-center justify-center"
                         style={{
-                          color: 'var(--foreground)'
+                          color: '#8141e6'
                         }}
                         onMouseEnter={(e) => {
                           e.currentTarget.style.opacity = '0.7';
@@ -1155,7 +1155,7 @@ export default function Home() {
                         onClick={handleDownloadCode}
                         className="p-2 transition-all duration-200 min-w-[40px] min-h-[40px] flex items-center justify-center"
                         style={{
-                          color: 'var(--foreground)'
+                          color: '#8141e6'
                         }}
                         onMouseEnter={(e) => {
                           e.currentTarget.style.opacity = '0.7';
@@ -1176,7 +1176,7 @@ export default function Home() {
                         disabled={isLoading}
                         className="p-2 transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50 min-w-[40px] min-h-[40px] flex items-center justify-center"
                         style={{
-                          color: 'var(--foreground)'
+                          color: '#8141e6'
                         }}
                         onMouseEnter={(e) => {
                           if (!isLoading) {
@@ -1232,7 +1232,7 @@ export default function Home() {
                                 style={{
                                   fontSize: '10px',
                                   fontWeight: 'bold',
-                                  color: file.id === activeFileId ? '#fbbf24' : 'currentColor'
+                                  color: file.id === activeFileId ? '#8141e6' : 'currentColor'
                                 }}
                               >
                                 &lt;/&gt;
@@ -1242,7 +1242,7 @@ export default function Home() {
                                 style={{
                                   fontSize: '12px',
                                   fontWeight: 'bold',
-                                  color: file.id === activeFileId ? '#fbbf24' : 'currentColor'
+                                  color: file.id === activeFileId ? '#8141e6' : 'currentColor'
                                 }}
                               >
                                 ॐ
@@ -1288,7 +1288,7 @@ export default function Home() {
                                 className={getLanguageIcon(file.language)}
                                 style={{
                                   fontSize: '12px',
-                                  color: file.id === activeFileId ? '#fbbf24' : 'currentColor'
+                                  color: file.id === activeFileId ? '#8141e6' : 'currentColor'
                                 }}
                               ></i>
                             )}
@@ -1409,7 +1409,7 @@ export default function Home() {
                       onClick={createNewFile}
                       className="p-3 transition-all duration-200 min-w-[44px] min-h-[44px] flex items-center justify-center"
                       style={{
-                        color: 'var(--foreground)'
+                        color: '#8141e6'
                       }}
                       onMouseEnter={(e) => {
                         e.currentTarget.style.opacity = '0.7';
@@ -1428,7 +1428,7 @@ export default function Home() {
                       onClick={handleCopyCode}
                       className="p-3 transition-all duration-200 min-w-[44px] min-h-[44px] flex items-center justify-center"
                       style={{
-                        color: 'var(--foreground)'
+                        color: '#8141e6'
                       }}
                       onMouseEnter={(e) => {
                         e.currentTarget.style.opacity = '0.7';
@@ -1479,7 +1479,7 @@ export default function Home() {
                       onClick={handleDownloadCode}
                       className="p-3 transition-all duration-200 min-w-[44px] min-h-[44px] flex items-center justify-center"
                       style={{
-                        color: 'var(--foreground)'
+                        color: '#8141e6'
                       }}
                       onMouseEnter={(e) => {
                         e.currentTarget.style.opacity = '0.7';
@@ -1500,7 +1500,7 @@ export default function Home() {
                       disabled={isLoading}
                       className="p-3 transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50 min-w-[44px] min-h-[44px] flex items-center justify-center"
                       style={{
-                        color: 'var(--foreground)'
+                        color: '#8141e6'
                       }}
                       onMouseEnter={(e) => {
                         if (!isLoading) {
@@ -1556,7 +1556,7 @@ export default function Home() {
                               style={{
                                 fontSize: '12px',
                                 fontWeight: 'bold',
-                                color: file.id === activeFileId ? '#fbbf24' : 'currentColor'
+                                color: file.id === activeFileId ? '#8141e6' : 'currentColor'
                               }}
                             >
                               &lt;/&gt;
@@ -1566,7 +1566,7 @@ export default function Home() {
                               style={{
                                 fontSize: '14px',
                                 fontWeight: 'bold',
-                                color: file.id === activeFileId ? '#fbbf24' : 'currentColor'
+                                color: file.id === activeFileId ? '#8141e6' : 'currentColor'
                               }}
                             >
                               ॐ
@@ -1612,7 +1612,7 @@ export default function Home() {
                               className={getLanguageIcon(file.language)}
                               style={{
                                 fontSize: '14px',
-                                color: file.id === activeFileId ? '#fbbf24' : 'currentColor'
+                                color: file.id === activeFileId ? '#8141e6' : 'currentColor'
                               }}
                             ></i>
                           )}

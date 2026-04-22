@@ -208,41 +208,12 @@ export default function ChatPanel({
                         {msg.message}
                       </div>
 
-                      {/* Reaction badge */}
-                      {reaction && (
-                        <div className="absolute -bottom-2 right-2 text-sm cursor-pointer hover:scale-125 transition-transform"
-                          onClick={() => onReaction?.(msg.id, reaction.emoji)}>
-                          {reaction.emoji}
-                        </div>
-                      )}
-
                       {/* Hover action buttons */}
-                      <div className={`absolute ${mine ? '-left-20' : '-right-20'} top-0 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-150`}>
+                      <div className={`absolute ${mine ? '-left-12' : '-right-12'} top-0 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-150`}>
                         <button onClick={() => { setReplyingTo(msg); inputRef.current?.focus(); }} className="p-1 rounded hover:opacity-70 transition-opacity" style={{ color: 'var(--foreground)', opacity: 0.5 }} title="Reply">
                           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 14L4 9l5-5" /><path d="M20 20v-7a4 4 0 0 0-4-4H4" /></svg>
                         </button>
-                        <button onClick={(e) => { e.stopPropagation(); setActiveReactionMsgId(showReactions ? null : msg.id); }} className="p-1 rounded hover:opacity-70 transition-opacity" style={{ color: 'var(--foreground)', opacity: 0.5 }} title="React">
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><path d="M8 14s1.5 2 4 2 4-2 4-2" /><line x1="9" y1="9" x2="9.01" y2="9" /><line x1="15" y1="9" x2="15.01" y2="9" /></svg>
-                        </button>
-                        {mine && (
-                          <button onClick={() => onDelete?.(msg.id)} className="p-1 rounded hover:opacity-70 transition-opacity" style={{ color: '#ef4444', opacity: 0.6 }} title="Unsend">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg>
-                          </button>
-                        )}
                       </div>
-
-                      {/* Reaction picker popup */}
-                      {showReactions && (
-                        <div className={`absolute ${mine ? 'right-0' : 'left-0'} -top-9 flex items-center gap-0.5 px-2 py-1 rounded-full shadow-lg z-10`}
-                          style={{ backgroundColor: theme === 'dark' ? '#1a1a2e' : '#fff', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}
-                          onClick={(e) => e.stopPropagation()}>
-                          {REACTION_EMOJIS.map((emoji) => (
-                            <button key={emoji} onClick={() => { onReaction?.(msg.id, emoji); setActiveReactionMsgId(null); }} className="text-sm hover:scale-125 transition-transform p-0.5">
-                              {emoji}
-                            </button>
-                          ))}
-                        </div>
-                      )}
                     </>
                   )}
                 </div>
@@ -293,7 +264,7 @@ export default function ChatPanel({
 
         <div className="flex items-center gap-2 rounded-2xl px-3 py-2" style={{
           backgroundColor: theme === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
-          border: `1px solid ${theme === 'dark' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`,
+          border: `2px solid #8141e6`,
         }}>
           <button onClick={() => setShowEmojiPicker(!showEmojiPicker)} className="flex-shrink-0 p-1 rounded transition-opacity hover:opacity-70" style={{ color: 'var(--foreground)', opacity: 0.5 }} aria-label="Emoji">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><path d="M8 14s1.5 2 4 2 4-2 4-2" /><line x1="9" y1="9" x2="9.01" y2="9" /><line x1="15" y1="9" x2="15.01" y2="9" /></svg>
@@ -311,7 +282,7 @@ export default function ChatPanel({
           />
 
           <button onClick={handleSend} disabled={!input.trim()} className="flex-shrink-0 p-2 rounded-full transition-all duration-200 disabled:opacity-30 hover:opacity-80"
-            style={{ backgroundColor: input.trim() ? (theme === 'dark' ? '#fff' : '#000') : 'rgba(255,255,255,0.1)', color: input.trim() ? (theme === 'dark' ? '#000' : '#fff') : 'var(--foreground)' }} aria-label="Send">
+            style={{ backgroundColor: input.trim() ? '#8141e6' : 'rgba(255,255,255,0.1)', color: input.trim() ? '#fff' : 'var(--foreground)' }} aria-label="Send">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M12 19V5M5 12l7-7 7 7"/>
             </svg>

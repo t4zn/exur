@@ -145,11 +145,11 @@ export default function LanguageSelector({ language, onChange, onViewLanguage, o
       >
         {selectedLanguage && (
           selectedLanguage.icon === 'custom' ? (
-            <span style={{ fontSize: '12px', fontWeight: 'bold' }}>&lt;/&gt;</span>
+            <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#8141e6' }}>&lt;/&gt;</span>
           ) : isOmIcon(selectedLanguage.icon) ? (
-            <span className="text-sm sm:text-base font-bold">ॐ</span>
+            <span className="text-sm sm:text-base font-bold" style={{ color: '#8141e6' }}>ॐ</span>
           ) : isLispIcon(selectedLanguage.icon) ? (
-            <Image src="/lisp.png" alt="Lisp" width={16} height={16} className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            <Image src="/lisp.png" alt="Lisp" width={16} height={16} className="w-3.5 h-3.5 sm:w-4 sm:h-4" style={{ filter: 'sepia(1) saturate(5) hue-rotate(240deg) brightness(0.9)' }} />
           ) : isAssemblyIcon(selectedLanguage.icon) ? (
             <Image
               src={theme === 'dark' ? '/assemblydark.PNG' : '/assemblylight.PNG'}
@@ -157,6 +157,7 @@ export default function LanguageSelector({ language, onChange, onViewLanguage, o
               width={20}
               height={20}
               className="w-4 h-4 sm:w-5 sm:h-5"
+              style={{ filter: 'sepia(1) saturate(5) hue-rotate(240deg) brightness(0.9)' }}
             />
           ) : isBasicIcon(selectedLanguage.icon) ? (
             <Image
@@ -165,9 +166,10 @@ export default function LanguageSelector({ language, onChange, onViewLanguage, o
               width={14}
               height={14}
               className="w-3 h-3 sm:w-3.5 sm:h-3.5"
+              style={{ filter: 'sepia(1) saturate(5) hue-rotate(240deg) brightness(0.9)' }}
             />
           ) : (
-            <i className={`${selectedLanguage.icon} text-sm sm:text-base`}></i>
+            <i className={`${selectedLanguage.icon} text-sm sm:text-base`} style={{ color: '#8141e6' }}></i>
           )
         )}
         <span className="whitespace-nowrap">{selectedLanguage?.label || 'Select Language'}</span>

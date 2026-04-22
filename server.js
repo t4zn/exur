@@ -35,17 +35,17 @@ const rooms = new Map();
 function getRoom(roomId) {
   if (!rooms.has(roomId)) {
     rooms.set(roomId, {
-      code: '// Start coding together!\nconsole.log("Hello, World!");',
-      language: 'javascript',
+      code: 'print("Hello, World!")\nprint("Welcome to Exur!")',
+      language: 'python',
       users: new Map(),
       chat: [],
       // Multi-tab file system
       files: [
         {
           id: '1',
-          filename: 'script.js',
-          language: 'javascript',
-          code: 'console.log("Hello, World!");\nconsole.log("Welcome to Exur!");',
+          filename: 'main.py',
+          language: 'python',
+          code: 'print("Hello, World!")\nprint("Welcome to Exur!")',
         },
       ],
       activeFileId: '1',
@@ -84,7 +84,16 @@ app.prepare().then(() => {
   // Attach Socket.IO to the same HTTP server
   const { Server } = require('socket.io');
   const io = new Server(httpServer, {
-    cors: { origin: '*' },
+    cors: { 
+      origin: [
+        'https://exur.in',
+        'https://www.exur.in',
+        'http://localhost:3000',
+        'http://localhost:3001'
+      ],
+      methods: ['GET', 'POST'],
+      credentials: true
+    },
     // Increase max buffer for large code payloads
     maxHttpBufferSize: 1e7,
   });

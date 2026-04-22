@@ -75,7 +75,13 @@ export function useSocket(opts: UseSocketOptions) {
   useEffect(() => { callbacksRef.current = opts; });
 
   useEffect(() => {
-    const socket = io({ transports: ['websocket', 'polling'], reconnectionAttempts: 10, reconnectionDelay: 1000 });
+    // Connect to the custom server (defaults to localhost:3000 in dev)
+    const serverUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3000';
+    const socket = io(serverUrl, { 
+      transports: ['websocket', 'polling'], 
+      reconnectionAttempts: 10, 
+      reconnectionDelay: 1000 
+    });
     socketRef.current = socket;
 
     socket.on('connect', () => { setIsConnected(true); socket.emit('join-room', { roomId }); });

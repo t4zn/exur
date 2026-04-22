@@ -311,7 +311,7 @@ export default function CollaborativeEditorPage({ params }: { params: Promise<{ 
         >
           {/* File Icon */}
           <div className="flex-shrink-0">
-            <i className={`devicon-${file.language}-plain`} style={{ fontSize: '14px', color: file.id === activeFileId ? '#fbbf24' : 'currentColor' }}></i>
+            <i className={`devicon-${file.language}-plain`} style={{ fontSize: '14px', color: file.id === activeFileId ? '#8141e6' : 'currentColor' }}></i>
           </div>
 
           {/* Filename */}
@@ -392,13 +392,13 @@ export default function CollaborativeEditorPage({ params }: { params: Promise<{ 
           </div>
         </div>
         <div className="flex items-center gap-1">
-          <button onClick={createNewFile} className="p-2 transition-all duration-200 min-w-[36px] min-h-[36px] flex items-center justify-center hover:opacity-70" style={{ color: 'var(--foreground)' }} aria-label="New file" title="New file">
+          <button onClick={createNewFile} className="p-2 transition-all duration-200 min-w-[36px] min-h-[36px] flex items-center justify-center hover:opacity-70" style={{ color: '#8141e6' }} aria-label="New file" title="New file">
             <svg width={iconSize} height={iconSize} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <line x1="12" y1="5" x2="12" y2="19" />
               <line x1="5" y1="12" x2="19" y2="12" />
             </svg>
           </button>
-          <button onClick={handleCopyLink} className="p-2 transition-all duration-200 min-w-[36px] min-h-[36px] flex items-center justify-center hover:opacity-70" style={{ color: isLinkCopied ? '#22c55e' : 'var(--foreground)' }} aria-label="Copy invite link">
+          <button onClick={handleCopyLink} className="p-2 transition-all duration-200 min-w-[36px] min-h-[36px] flex items-center justify-center hover:opacity-70" style={{ color: isLinkCopied ? '#22c55e' : '#8141e6' }} aria-label="Copy invite link">
             {isLinkCopied ? (
               <svg width={iconSize} height={iconSize} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ color: '#22c55e' }}>
                 <polyline points="20,6 9,17 4,12" />
@@ -410,7 +410,7 @@ export default function CollaborativeEditorPage({ params }: { params: Promise<{ 
               </svg>
             )}
           </button>
-          <button onClick={handleCopyCode} className="p-2 transition-all duration-200 min-w-[36px] min-h-[36px] flex items-center justify-center hover:opacity-70" style={{ color: 'var(--foreground)' }} aria-label="Copy code">
+          <button onClick={handleCopyCode} className="p-2 transition-all duration-200 min-w-[36px] min-h-[36px] flex items-center justify-center hover:opacity-70" style={{ color: '#8141e6' }} aria-label="Copy code">
             <div className="relative transition-all duration-300 ease-in-out">
               {isCodeCopied ? (
                 <svg width={iconSize} height={iconSize} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="animate-bounce-in" style={{ color: '#fbbf24' }}>
@@ -424,14 +424,14 @@ export default function CollaborativeEditorPage({ params }: { params: Promise<{ 
               )}
             </div>
           </button>
-          <button onClick={handleDownloadCode} className="p-2 transition-all duration-200 min-w-[36px] min-h-[36px] flex items-center justify-center hover:opacity-70" style={{ color: 'var(--foreground)' }} aria-label="Download code">
+          <button onClick={handleDownloadCode} className="p-2 transition-all duration-200 min-w-[36px] min-h-[36px] flex items-center justify-center hover:opacity-70" style={{ color: '#8141e6' }} aria-label="Download code">
             <svg width={iconSize} height={iconSize} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
               <polyline points="7,10 12,15 17,10" />
               <line x1="12" y1="15" x2="12" y2="3" />
             </svg>
           </button>
-          <button onClick={handleRunCode} disabled={isLoading} className="p-2 transition-all duration-200 disabled:opacity-50 min-w-[36px] min-h-[36px] flex items-center justify-center hover:opacity-70" style={{ color: 'var(--foreground)' }} aria-label="Run">
+          <button onClick={handleRunCode} disabled={isLoading} className="p-2 transition-all duration-200 disabled:opacity-50 min-w-[36px] min-h-[36px] flex items-center justify-center hover:opacity-70" style={{ color: '#8141e6' }} aria-label="Run">
             {isLoading ? <span className="inline-flex"><span className="w-1 h-1 bg-current rounded-full animate-pulse" /><span className="w-1 h-1 bg-current rounded-full animate-pulse mx-0.5" style={{ animationDelay: '200ms' }} /><span className="w-1 h-1 bg-current rounded-full animate-pulse" style={{ animationDelay: '400ms' }} /></span>
             : <svg width={iconSize} height={iconSize} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="transition-transform hover:scale-110"><polygon points="5,3 19,12 5,21" /></svg>}
           </button>
