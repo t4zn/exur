@@ -144,9 +144,7 @@ export default function Output({
         {/* Input Section - Right Side */}
         {onStdinChange && (
           <div className="w-[300px] lg:w-[350px] flex-shrink-0 flex flex-col">
-            <label className="block text-base font-medium mb-1 sm:mb-2" style={{ color: 'var(--foreground)' }}>
-              Input
-            </label>
+            <div className="text-lg font-medium mb-2" style={{ color: 'var(--foreground)' }}>Input</div>
             <textarea
               value={stdin}
               onChange={(e) => onStdinChange(e.target.value)}
