@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { v4 as uuidv4 } from 'uuid';
 import CodeEditor from '../components/Editor';
 import Output from '../components/Output';
+import OutputVertical from '../components/OutputVertical';
 import LanguageSelector, { getLanguageIcon, isOmIcon, isLispIcon, isAssemblyIcon, isBasicIcon } from '../components/LanguageSelector';
 import ResizablePanels from '../components/ResizablePanels';
 
@@ -1053,7 +1054,7 @@ export default function Home() {
 
             {/* Output Section */}
             <div className="flex-1 min-h-[40%] animate-fade-in" style={{ backgroundColor: 'var(--background)' }}>
-              <Output
+              <OutputVertical
                 output={output}
                 error={error}
                 isLoading={isLoading}
@@ -1373,7 +1374,7 @@ export default function Home() {
               rightPanel={
                 <div className="h-full flex flex-col p-3 animate-fade-in" style={{ backgroundColor: 'var(--background)' }}>
                   <div className="flex-1 min-h-0">
-                    <Output
+                    <OutputVertical
                       output={output}
                       error={error}
                       isLoading={isLoading}
@@ -1715,7 +1716,7 @@ export default function Home() {
             rightPanel={
               <div className="h-full flex flex-col p-6 lg:p-8 animate-fade-in" style={{ backgroundColor: 'var(--background)' }}>
                 <div className="flex-1 min-h-[300px]">
-                  <Output
+                  <OutputVertical
                     output={output}
                     error={error}
                     isLoading={isLoading}

@@ -301,7 +301,7 @@ export default function CollaborativeEditorPage({ params }: { params: Promise<{ 
       {/* File tabs */}
       {renderTabs()}
       {/* Editor */}
-      <div className="flex-1 min-h-0 overflow-hidden" style={{ boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}>
+      <div className="flex-1 min-h-0 overflow-hidden rounded-lg" style={{ boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}>
         <CollaborativeEditor value={code} onChange={handleCodeChange} language={activeFile?.language || language} remoteCursors={remoteCursorsArray.map(u => ({ ...u, cursor: u.cursor ?? null }))} onCursorMove={emitCursorMove} />
       </div>
     </div>
