@@ -409,9 +409,9 @@ export default function CollaborativeEditorPage({ params }: { params: Promise<{ 
             {onlineCount}
           </div>
           <div className="hidden md:flex items-center -space-x-1">
-            {myInfo && <div className="w-5 h-5 rounded-full flex items-center justify-center text-[8px] font-bold text-white" style={{ backgroundColor: myInfo.color }} title={`${myInfo.username} (you)`}>{myInfo.username.charAt(0)}</div>}
+            {myInfo && <div key={myInfo.socketId} className="w-5 h-5 rounded-full flex items-center justify-center text-[8px] font-bold text-white" style={{ backgroundColor: myInfo.color }} title={`${myInfo.username} (you)`}>{myInfo.username.charAt(0)}</div>}
             {remoteCursorsArray.slice(0, 3).map(u => <div key={u.socketId} className="w-5 h-5 rounded-full flex items-center justify-center text-[8px] font-bold text-white" style={{ backgroundColor: u.color }} title={u.username}>{u.username.charAt(0)}</div>)}
-            {remoteCursorsArray.length > 3 && <div className="w-5 h-5 rounded-full flex items-center justify-center text-[8px] font-bold" style={{ backgroundColor: theme === 'dark' ? '#333' : '#e5e7eb', color: 'var(--foreground)' }}>+{remoteCursorsArray.length - 3}</div>}
+            {remoteCursorsArray.length > 3 && <div key="more-users" className="w-5 h-5 rounded-full flex items-center justify-center text-[8px] font-bold" style={{ backgroundColor: theme === 'dark' ? '#333' : '#e5e7eb', color: 'var(--foreground)' }}>+{remoteCursorsArray.length - 3}</div>}
           </div>
         </div>
         <div className="flex items-center gap-1">
@@ -537,6 +537,11 @@ export default function CollaborativeEditorPage({ params }: { params: Promise<{ 
           </div>
         </div>
       )}
+
+      {/* Footer */}
+      <footer className="text-center py-4 text-xs opacity-60" style={{ color: 'var(--foreground)' }}>
+        © 2026 <a href="https://t4z.in" target="_blank" rel="noopener noreferrer" className="font-medium hover:opacity-80 transition-opacity">Taizun</a>. All rights reserved.
+      </footer>
 
       <InfoOverlay />
     </div>

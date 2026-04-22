@@ -86,7 +86,8 @@ export default function CollaborativeEditor({
     const decorations: editor.IModelDeltaDecoration[] = [];
 
     for (const remote of remoteCursors) {
-      if (!remote.cursor) continue;
+      // Skip if cursor data is missing or incomplete
+      if (!remote.cursor || !remote.socketId || !remote.username) continue;
 
       const { lineNumber, column } = remote.cursor;
 
@@ -128,7 +129,7 @@ export default function CollaborativeEditor({
     }
 
     const css = remoteCursors
-      .filter((r) => r.cursor)
+      .filter((r) => r.cursor && r.socketId && r.username && r.color)
       .map(
         (r) => `
         .remote-cursor-bar {
