@@ -462,8 +462,7 @@ export default function CollaborativeEditorPage({ params }: { params: Promise<{ 
       <header className="px-3 sm:px-4 lg:px-8 py-2 sm:py-3 lg:py-4" style={{ backgroundColor: 'var(--background)' }}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 sm:gap-3 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => router.push('/')}>
-            <Image src="/exur.svg" alt="Exur" width={32} height={32} className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8" />
-            <h1 className="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-medium tracking-wide" style={{ color: 'var(--foreground)', fontFamily: 'var(--font-league-spartan), sans-serif' }}>Exur</h1>
+            <Image src="/logo.svg" alt="Exur" width={120} height={40} className="h-6 sm:h-7 lg:h-9 xl:h-10 w-auto" />
           </div>
           <div className="flex items-center gap-1 sm:gap-2 lg:gap-4 xl:gap-6">
             <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg text-[10px] sm:text-xs font-mono" style={{ backgroundColor: theme === 'dark' ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)', color: 'var(--foreground)' }}>

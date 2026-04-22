@@ -691,8 +691,7 @@ export default function Home() {
             className="flex items-center gap-2 sm:gap-3 cursor-pointer hover:opacity-80 transition-opacity duration-200"
             onClick={() => window.location.reload()}
           >
-            <Image src="/exur.svg" alt="Exur" width={32} height={32} className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8" />
-            <h1 className="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-semibold tracking-wide" style={{ color: 'var(--foreground)' }}>Exur</h1>
+            <Image src="/logo.svg" alt="Exur" width={120} height={40} className="h-6 sm:h-7 lg:h-9 xl:h-10 w-auto" />
           </div>
           <div className="flex items-center gap-1 sm:gap-2 lg:gap-4 xl:gap-6">
             <button
