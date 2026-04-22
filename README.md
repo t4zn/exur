@@ -1,4 +1,4 @@
-`z# Exur - Online Code Compiler
+# Exur - Online Code Compiler
 
 A minimal, modern online code compiler built with Next.js that supports C, C++, Java, and Python. Features a clean black-and-white design with Monaco Editor and Judge0 API integration.
 
