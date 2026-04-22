@@ -488,9 +488,21 @@ export default function CollaborativeEditorPage({ params }: { params: Promise<{ 
             <Image src="/logo.svg" alt="Exur" width={120} height={40} className="h-6 sm:h-7 lg:h-9 xl:h-10 w-auto" />
           </div>
           <div className="flex items-center gap-1 sm:gap-2 lg:gap-4 xl:gap-6">
-            <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg text-[10px] sm:text-xs font-mono" style={{ backgroundColor: theme === 'dark' ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)', color: 'var(--foreground)' }}>
-              <span style={{ opacity: 0.5 }}>Room</span>
-              <span className="font-semibold">{roomId}</span>
+            <div className="flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer hover:opacity-80 transition-opacity" 
+                 style={{ backgroundColor: theme === 'dark' ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)' }}
+                 onClick={handleCopyLink}
+                 title="Click to copy room link">
+              <div className="flex items-center gap-1">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: '#8141e6' }}>
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" style={{ color: '#8141e6' }}>
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+              </div>
+              <span className="text-lg font-semibold" style={{ color: '#8141e6', fontFamily: 'var(--font-poppins), sans-serif' }}>{roomId}</span>
             </div>
             <LanguageSelector language={language} onChange={handleLanguageChange} />
             <button onClick={toggleTheme} className="p-2 sm:p-2.5 lg:p-3 transition-all duration-200 min-w-[40px] min-h-[40px] flex items-center justify-center hover:opacity-70" style={{ color: 'var(--foreground)' }} aria-label="Toggle theme">
