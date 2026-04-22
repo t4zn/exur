@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { v4 as uuidv4 } from 'uuid';
 import CodeEditor from '../components/Editor';
 import Output from '../components/Output';
 import LanguageSelector, { getLanguageIcon, isOmIcon, isLispIcon, isAssemblyIcon, isBasicIcon } from '../components/LanguageSelector';
@@ -692,6 +694,26 @@ export default function Home() {
             <h1 className="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-medium tracking-wide" style={{ color: 'var(--foreground)', fontFamily: 'var(--font-league-spartan), sans-serif' }}>Exur</h1>
           </div>
           <div className="flex items-center gap-1 sm:gap-2 lg:gap-4 xl:gap-6">
+            <button
+              onClick={() => {
+                const roomId = uuidv4().slice(0, 8);
+                window.location.href = `/editor/${roomId}`;
+              }}
+              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg text-[10px] sm:text-xs font-medium transition-all duration-200 hover:opacity-70"
+              style={{
+                backgroundColor: theme === 'dark' ? '#ffffff' : '#000000',
+                color: theme === 'dark' ? '#000000' : '#ffffff',
+              }}
+              aria-label="Start collaborative session"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="hidden sm:block">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+              </svg>
+              Collaborate
+            </button>
             <LanguageSelector
               language={language}
               onChange={handleLanguageChange}
@@ -737,7 +759,7 @@ export default function Home() {
             {/* Editor Section */}
             <div className="flex-1 min-h-[50%] flex flex-col p-2 animate-slide-in" style={{ backgroundColor: 'var(--background)' }}>
               <div className="flex items-center justify-between mb-2">
-                <h2 className="text-base font-light" style={{ color: 'var(--foreground)' }}>Editor</h2>
+                <h2 className="text-lg font-medium" style={{ color: 'var(--foreground)' }}>Editor</h2>
                 <div className="flex items-center gap-1">
                   <button
                     onClick={createNewFile}
@@ -1056,7 +1078,7 @@ export default function Home() {
               leftPanel={
                 <div className="h-full flex flex-col p-3 animate-slide-in" style={{ backgroundColor: 'var(--background)' }}>
                   <div className="flex items-center justify-between mb-3">
-                    <h2 className="text-lg font-light" style={{ color: 'var(--foreground)' }}>Editor</h2>
+                    <h2 className="text-lg font-medium" style={{ color: 'var(--foreground)' }}>Editor</h2>
                     <div className="flex items-center gap-1">
                       <button
                         onClick={createNewFile}
@@ -1380,7 +1402,7 @@ export default function Home() {
             leftPanel={
               <div className="h-full flex flex-col p-6 lg:p-8 animate-slide-in" style={{ backgroundColor: 'var(--background)' }}>
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl font-light" style={{ color: 'var(--foreground)' }}>Editor</h2>
+                  <h2 className="text-lg font-medium" style={{ color: 'var(--foreground)' }}>Editor</h2>
                   <div className="flex items-center gap-2">
                     <button
                       onClick={createNewFile}

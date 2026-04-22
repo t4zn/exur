@@ -767,3 +767,95 @@ html {
     image-rendering: crisp-edges;
   }
 }
+
+/* ══════════════════════════════════════════════════════════════════════
+   COLLABORATIVE EDITOR — Remote Cursors & Chat Styles
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* Remote cursor vertical bar */
+.remote-cursor-bar {
+  border-left: 2px solid currentColor !important;
+  margin-left: -1px;
+  animation: cursorFadeIn 0.2s ease-out;
+}
+
+/* Remote cursor username label */
+.remote-cursor-label {
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 3px;
+  margin-left: 4px;
+  pointer-events: none;
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  position: relative;
+  top: -2px;
+  opacity: 0.9;
+  animation: cursorLabelIn 0.3s ease-out;
+  white-space: nowrap;
+}
+
+@keyframes cursorFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes cursorLabelIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 0.9;
+    transform: translateY(0);
+  }
+}
+
+/* Collaborative editor — ensure the editor fills height properly */
+.collaborative-editor .monaco-editor {
+  min-height: 100% !important;
+}
+
+/* Chat panel scrollbar override — thin and subtle */
+.chat-scroll::-webkit-scrollbar {
+  width: 3px;
+}
+
+.chat-scroll::-webkit-scrollbar-thumb {
+  background: rgba(128, 128, 128, 0.3);
+  border-radius: 3px;
+}
+
+.chat-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Output panel minimal scrollbar */
+.output-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+
+.output-scroll::-webkit-scrollbar-thumb {
+  background: rgba(128, 128, 128, 0.4);
+  border-radius: 2px;
+}
+
+.output-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(128, 128, 128, 0.6);
+}
+
+.output-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Firefox scrollbar */
+.output-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(128, 128, 128, 0.4) transparent;
+}
+
+/* Override the global border:none for the collaborative editor borders */
+.collab-border-override {
+  border: 1px solid rgba(128, 128, 128, 0.15) !important;
+}

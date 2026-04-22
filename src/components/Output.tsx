@@ -58,10 +58,10 @@ export default function Output({
 
   return (
     <div className="h-full flex flex-col" style={{ backgroundColor: 'var(--background)' }}>
-      <div className="p-2 sm:p-3 lg:p-4 xl:p-6 pb-2 sm:pb-3 lg:pb-4" style={{ backgroundColor: 'var(--background)' }}>
+      <div className="p-2 sm:p-3 lg:p-4 xl:p-6 pb-1 sm:pb-1.5 lg:pb-2" style={{ backgroundColor: 'var(--background)' }}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 sm:gap-3">
-            <div className="text-sm sm:text-base lg:text-lg xl:text-xl font-light" style={{ color: 'var(--foreground)' }}>Output</div>
+            <div className="text-base font-medium" style={{ color: 'var(--foreground)' }}>Output</div>
             {onClear && (output || error) && !isLoading && (
               <button
                 onClick={onClear}
@@ -92,12 +92,60 @@ export default function Output({
         </div>
       </div>
 
-      <div className="flex-1 flex flex-col p-2 sm:p-3 lg:p-4 xl:p-6 font-mono text-[11px] sm:text-sm leading-relaxed" style={{ backgroundColor: 'var(--background)' }}>
-        {/* Input Section - Always show if onStdinChange is provided */}
+      <div className="flex-1 flex gap-3 sm:gap-4 px-2 sm:px-3 lg:px-4 xl:px-6 pb-2 sm:pb-3 lg:pb-4 xl:pb-6 font-mono text-[11px] sm:text-sm leading-relaxed overflow-hidden" style={{ backgroundColor: 'var(--background)' }}>
+        {/* Output Content - Left Side */}
+        <div className="flex-1 overflow-y-auto overflow-x-hidden output-scroll">
+          {isLoading ? (
+            <div style={{ color: 'var(--foreground)' }} className="flex items-center gap-1">
+              Running code
+              <span className="inline-flex">
+                <span className="animate-pulse" style={{ animationDelay: '0ms' }}>.</span>
+                <span className="animate-pulse" style={{ animationDelay: '200ms' }}>.</span>
+                <span className="animate-pulse" style={{ animationDelay: '400ms' }}>.</span>
+              </span>
+            </div>
+          ) : (
+            <>
+              {error ? (
+                <div className="animate-fade-in">
+                  <div style={{ color: 'var(--foreground)' }} className="whitespace-pre-wrap break-words mb-3">
+                    {error}
+                  </div>
+                  {onAIFix && (
+                    <span
+                      onClick={onAIFix}
+                      className="group inline-flex items-center gap-1.5 cursor-pointer hover:opacity-70 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity duration-200 text-[10px] sm:text-xs font-semibold tracking-wide"
+                      style={{
+                        color: 'var(--foreground)',
+                        fontFamily: 'SF Pro Display, -apple-system, BlinkMacSystemFont, system-ui, sans-serif'
+                      }}
+                      title="Fix code with AI"
+                    >
+                      <div className="group-hover:rotate-12 transition-transform duration-200">
+                        <SparkIcon size={12} />
+                      </div>
+                      {isFixingCode ? 'Fixing...' : 'AI Fix'}
+                    </span>
+                  )}
+                </div>
+              ) : output ? (
+                <div style={{ color: 'var(--foreground)' }} className="whitespace-pre-wrap break-words animate-fade-in">
+                  {output}
+                </div>
+              ) : (
+                <div style={{ color: 'var(--foreground)' }} className="opacity-50 animate-fade-in">
+                  Run code to see output
+                </div>
+              )}
+            </>
+          )}
+        </div>
+
+        {/* Input Section - Right Side */}
         {onStdinChange && (
-          <div className="mb-3 sm:mb-4">
-            <label className="block text-[10px] sm:text-xs font-medium mb-1 sm:mb-2 opacity-70" style={{ color: 'var(--foreground)' }}>
-              Input (optional)
+          <div className="w-[300px] lg:w-[350px] flex-shrink-0 flex flex-col">
+            <label className="block text-base font-medium mb-1 sm:mb-2" style={{ color: 'var(--foreground)' }}>
+              Input
             </label>
             <textarea
               value={stdin}
@@ -119,7 +167,7 @@ export default function Output({
                 }
               }}
               placeholder="Enter input..."
-              className="w-full h-12 sm:h-16 lg:h-20 px-2 sm:px-3 py-2 text-[11px] sm:text-xs lg:text-sm font-mono resize-none border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-400 dark:focus:ring-gray-600 transition-colors placeholder:text-[11px] sm:placeholder:text-xs lg:placeholder:text-sm"
+              className="flex-1 px-2 sm:px-3 py-2 text-[11px] sm:text-xs lg:text-sm font-mono resize-none border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-400 dark:focus:ring-gray-600 transition-colors placeholder:text-[11px] sm:placeholder:text-xs lg:placeholder:text-sm"
               style={{
                 backgroundColor: 'var(--background)',
                 color: 'var(--foreground)',
@@ -131,56 +179,6 @@ export default function Output({
             />
           </div>
         )}
-
-        {/* Output Content */}
-        <div className="flex-1 overflow-auto">
-          {isLoading ? (
-            <div style={{ color: 'var(--foreground)' }} className="flex items-center gap-1">
-              Running code
-              <span className="inline-flex">
-                <span className="animate-pulse" style={{ animationDelay: '0ms' }}>.</span>
-                <span className="animate-pulse" style={{ animationDelay: '200ms' }}>.</span>
-                <span className="animate-pulse" style={{ animationDelay: '400ms' }}>.</span>
-              </span>
-            </div>
-          ) : (
-            <>
-              {error ? (
-                <div className="animate-fade-in">
-                  <div style={{ color: 'var(--foreground)' }} className="whitespace-pre-wrap mb-3">
-                    {error}
-                  </div>
-                  {onAIFix && (
-                    <span
-                      onClick={onAIFix}
-                      className="group inline-flex items-center gap-1.5 cursor-pointer hover:opacity-70 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity duration-200 text-[10px] sm:text-xs font-semibold tracking-wide"
-                      style={{
-                        color: 'var(--foreground)',
-                        fontFamily: 'SF Pro Display, -apple-system, BlinkMacSystemFont, system-ui, sans-serif'
-                      }}
-                      title="Fix code with AI"
-                    >
-                      <div className="group-hover:rotate-12 transition-transform duration-200">
-                        <SparkIcon size={12} />
-                      </div>
-                      {isFixingCode ? 'Fixing...' : 'AI Fix'}
-                    </span>
-                  )}
-                </div>
-              ) : output ? (
-                <div style={{ color: 'var(--foreground)' }} className="whitespace-pre-wrap animate-fade-in">
-                  {output}
-                </div>
-              ) : (
-                <div style={{ color: 'var(--foreground)' }} className="opacity-50 animate-fade-in">
-                  Run code to see output
-                </div>
-              )}
-            </>
-          )}
-        </div>
-
-
       </div>
     </div>
   );

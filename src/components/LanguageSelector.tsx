@@ -137,42 +137,40 @@ export default function LanguageSelector({ language, onChange, onViewLanguage, o
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="px-2 sm:px-4 py-2 sm:py-3 font-medium uppercase tracking-wider text-xs sm:text-sm flex items-center justify-between min-w-[120px] sm:min-w-[200px] transition-all duration-200 hover:opacity-80"
+        className="px-2 sm:px-3 py-2 sm:py-3 font-medium uppercase tracking-wider text-xs sm:text-sm flex items-center gap-1.5 sm:gap-2 transition-all duration-200 hover:opacity-80"
         style={{
           backgroundColor: 'var(--background)',
           color: 'var(--foreground)'
         }}
       >
-        <div className="flex items-center gap-1 sm:gap-2">
-          {selectedLanguage && (
-            selectedLanguage.icon === 'custom' ? (
-              <span style={{ fontSize: '12px', fontWeight: 'bold' }}>&lt;/&gt;</span>
-            ) : isOmIcon(selectedLanguage.icon) ? (
-              <span className="text-sm sm:text-base font-bold">ॐ</span>
-            ) : isLispIcon(selectedLanguage.icon) ? (
-              <Image src="/lisp.png" alt="Lisp" width={16} height={16} className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-            ) : isAssemblyIcon(selectedLanguage.icon) ? (
-              <Image
-                src={theme === 'dark' ? '/assemblydark.PNG' : '/assemblylight.PNG'}
-                alt="Assembly"
-                width={20}
-                height={20}
-                className="w-4 h-4 sm:w-5 sm:h-5"
-              />
-            ) : isBasicIcon(selectedLanguage.icon) ? (
-              <Image
-                src={theme === 'dark' ? '/basicdark.PNG' : '/basiclight.PNG'}
-                alt="Basic"
-                width={14}
-                height={14}
-                className="w-3 h-3 sm:w-3.5 sm:h-3.5"
-              />
-            ) : (
-              <i className={`${selectedLanguage.icon} text-sm sm:text-base`}></i>
-            )
-          )}
-          <span className="truncate">{selectedLanguage?.label || 'Select Language'}</span>
-        </div>
+        {selectedLanguage && (
+          selectedLanguage.icon === 'custom' ? (
+            <span style={{ fontSize: '12px', fontWeight: 'bold' }}>&lt;/&gt;</span>
+          ) : isOmIcon(selectedLanguage.icon) ? (
+            <span className="text-sm sm:text-base font-bold">ॐ</span>
+          ) : isLispIcon(selectedLanguage.icon) ? (
+            <Image src="/lisp.png" alt="Lisp" width={16} height={16} className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+          ) : isAssemblyIcon(selectedLanguage.icon) ? (
+            <Image
+              src={theme === 'dark' ? '/assemblydark.PNG' : '/assemblylight.PNG'}
+              alt="Assembly"
+              width={20}
+              height={20}
+              className="w-4 h-4 sm:w-5 sm:h-5"
+            />
+          ) : isBasicIcon(selectedLanguage.icon) ? (
+            <Image
+              src={theme === 'dark' ? '/basicdark.PNG' : '/basiclight.PNG'}
+              alt="Basic"
+              width={14}
+              height={14}
+              className="w-3 h-3 sm:w-3.5 sm:h-3.5"
+            />
+          ) : (
+            <i className={`${selectedLanguage.icon} text-sm sm:text-base`}></i>
+          )
+        )}
+        <span className="whitespace-nowrap">{selectedLanguage?.label || 'Select Language'}</span>
         <svg
           width="10"
           height="10"
@@ -180,7 +178,7 @@ export default function LanguageSelector({ language, onChange, onViewLanguage, o
           fill="none"
           stroke="currentColor"
           strokeWidth="2"
-          className={`transition-transform duration-200 sm:w-3 sm:h-3 ${isOpen ? 'rotate-180' : ''}`}
+          className={`transition-transform duration-200 sm:w-3 sm:h-3 flex-shrink-0 ${isOpen ? 'rotate-180' : ''}`}
         >
           <polyline points="6,9 12,15 18,9"></polyline>
         </svg>
