@@ -94,7 +94,7 @@ export default function OutputVertical({
               <button
                 onClick={onClear}
                 className="p-1 hover:opacity-70 transition-opacity"
-                style={{ color: 'var(--foreground)' }}
+                style={{ color: '#8141e6' }}
                 title="Clear output"
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

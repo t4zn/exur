@@ -66,7 +66,7 @@ export default function Output({
               <button
                 onClick={onClear}
                 className="p-1 hover:opacity-70 transition-opacity"
-                style={{ color: 'var(--foreground)' }}
+                style={{ color: '#8141e6' }}
                 title="Clear output"
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -78,17 +78,22 @@ export default function Output({
                 </svg>
               </button>
             )}
+            {showStats && (
+              <div className="flex items-center gap-1 sm:gap-2 text-[10px] sm:text-xs font-mono opacity-60" style={{ color: 'var(--foreground)' }}>
+                {executionTime !== null && (
+                  <span>{formatExecutionTime(executionTime)}</span>
+                )}
+                {memoryUsed !== null && (
+                  <span>{formatMemory(memoryUsed)}</span>
+                )}
+              </div>
+            )}
           </div>
-          {showStats && (
-            <div className="flex items-center gap-1 sm:gap-2 lg:gap-4 text-[10px] sm:text-xs font-mono opacity-60" style={{ color: 'var(--foreground)' }}>
-              {executionTime !== null && (
-                <span>{formatExecutionTime(executionTime)}</span>
-              )}
-              {memoryUsed !== null && (
-                <span>{formatMemory(memoryUsed)}</span>
-              )}
-            </div>
-          )}
+          <div className="flex items-center" style={{ width: '300px', justifyContent: 'flex-start', marginLeft: '-48px' }}>
+            {onStdinChange && (
+              <div className="text-lg font-medium" style={{ color: 'var(--foreground)' }}>Input</div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -143,8 +148,7 @@ export default function Output({
 
         {/* Input Section - Right Side */}
         {onStdinChange && (
-          <div className="w-[300px] lg:w-[350px] flex-shrink-0 flex flex-col">
-            <div className="text-lg font-medium mb-2" style={{ color: 'var(--foreground)' }}>Input</div>
+          <div className="w-[300px] lg:w-[350px] flex-shrink-0">
             <textarea
               value={stdin}
               onChange={(e) => onStdinChange(e.target.value)}
@@ -165,7 +169,7 @@ export default function Output({
                 }
               }}
               placeholder="Enter input..."
-              className="flex-1 px-3 py-2 text-xs font-mono resize-none rounded-2xl outline-none placeholder:opacity-40"
+              className="w-full h-full px-3 py-2 text-xs font-mono resize-none rounded-2xl outline-none placeholder:opacity-40"
               style={{
                 backgroundColor: theme === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
                 color: 'var(--foreground)',
