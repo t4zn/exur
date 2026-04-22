@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { use } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { v4 as uuidv4 } from 'uuid';
 import { useTheme } from '../../../components/ThemeProvider';
 import CollaborativeEditor from '../../../components/CollaborativeEditor';
 import ChatPanel from '../../../components/ChatPanel';
@@ -17,7 +18,6 @@ import { useJudge0 } from '../../../hooks/useJudge0';
 
 const STORAGE_PREFIX = 'exur-collab-';
 function saveToLocal(roomId: string, code: string) { try { localStorage.setItem(`${STORAGE_PREFIX}${roomId}`, code); } catch {} }
-
 const defaultCodes: Record<string, { code: string; filename: string }> = {
   assembly: { 
     code: `section .data
@@ -108,12 +108,22 @@ export default function CollaborativeEditorPage({ params }: { params: Promise<{ 
   const [editingName, setEditingName] = useState('');
   const [isCodeCopied, setIsCodeCopied] = useState(false);
   const isRemoteUpdateRef = useRef(false);
-  const fileIdCounter = useRef(2);
 
   const { executeCode, isLoading } = useJudge0();
 
   const activeFile = files.find(f => f.id === activeFileId) || files[0];
   const code = activeFile?.code || '';
+
+  // Reset remote update flag after render
+  useEffect(() => {
+    if (isRemoteUpdateRef.current) {
+      // Use a small timeout to ensure the editor has processed the change
+      const timer = setTimeout(() => {
+        isRemoteUpdateRef.current = false;
+      }, 0);
+      return () => clearTimeout(timer);
+    }
+  }, [code]);
 
   // Socket callbacks
   const handleRoomState = useCallback((state: RoomState) => {
@@ -121,7 +131,6 @@ export default function CollaborativeEditorPage({ params }: { params: Promise<{ 
     if (state.files?.length) {
       setFiles(state.files);
       setActiveFileId(state.activeFileId || state.files[0].id);
-      fileIdCounter.current = Math.max(...state.files.map(f => parseInt(f.id) || 0)) + 1;
     }
     setLanguage(state.language);
     setMyInfo(state.you);
@@ -135,8 +144,14 @@ export default function CollaborativeEditorPage({ params }: { params: Promise<{ 
   }, []);
 
   const handleCodeUpdate = useCallback((newCode: string, _sid: string, fileId?: string) => {
-    isRemoteUpdateRef.current = true;
-    setFiles(prev => prev.map(f => f.id === (fileId || activeFileId) ? { ...f, code: newCode } : f));
+    const targetFileId = fileId || activeFileId;
+    setFiles(prev => prev.map(f => {
+      if (f.id === targetFileId) {
+        isRemoteUpdateRef.current = true;
+        return { ...f, code: newCode };
+      }
+      return f;
+    }));
   }, [activeFileId]);
 
   const handleLanguageUpdate = useCallback((l: string) => setLanguage(l), []);
@@ -162,9 +177,14 @@ export default function CollaborativeEditorPage({ params }: { params: Promise<{ 
 
   // File tab callbacks from server
   const handleFileCreated = useCallback((d: any) => {
-    setFiles(p => [...p, d.file]);
+    // Only add the file if it doesn't already exist (avoid duplicates from own actions)
+    setFiles(p => {
+      if (p.find(f => f.id === d.file.id)) {
+        return p; // File already exists, don't add it again
+      }
+      return [...p, d.file];
+    });
     setActiveFileId(d.file.id);
-    fileIdCounter.current = Math.max(fileIdCounter.current, parseInt(d.file.id) || 0) + 1;
   }, []);
   const handleFileSwitched = useCallback((d: any) => setActiveFileId(d.fileId), []);
   const handleFileRenamed = useCallback((d: any) => {
@@ -193,7 +213,10 @@ export default function CollaborativeEditorPage({ params }: { params: Promise<{ 
   // Local code change
   const handleCodeChange = useCallback((v: string | undefined) => {
     const val = v ?? '';
-    if (isRemoteUpdateRef.current) { isRemoteUpdateRef.current = false; return; }
+    // Skip if this is a remote update
+    if (isRemoteUpdateRef.current) {
+      return;
+    }
     setFiles(p => p.map(f => f.id === activeFileId ? { ...f, code: val } : f));
     saveToLocal(roomId, val);
     emitCodeChange(val, activeFileId);
@@ -203,7 +226,7 @@ export default function CollaborativeEditorPage({ params }: { params: Promise<{ 
   const handleLanguageChange = (lang: string) => {
     setLanguage(lang);
     const d = defaultCodes[lang] || { code: '// Write your code here', filename: 'main.txt' };
-    const newFile: FileTab = { id: String(fileIdCounter.current++), filename: d.filename, language: lang, code: d.code };
+    const newFile: FileTab = { id: uuidv4(), filename: d.filename, language: lang, code: d.code };
     setFiles(p => [...p, newFile]);
     setActiveFileId(newFile.id);
     emitFileCreate(newFile);
@@ -213,7 +236,7 @@ export default function CollaborativeEditorPage({ params }: { params: Promise<{ 
   // File tab operations
   const createNewFile = () => {
     const d = defaultCodes[language] || { code: '', filename: 'untitled.txt' };
-    const newFile: FileTab = { id: String(fileIdCounter.current++), filename: d.filename, language, code: d.code };
+    const newFile: FileTab = { id: uuidv4(), filename: d.filename, language, code: d.code };
     setFiles(p => [...p, newFile]);
     setActiveFileId(newFile.id);
     emitFileCreate(newFile);
