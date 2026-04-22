@@ -8,7 +8,6 @@ import CustomLanguageService from '../services/customLanguageService';
 interface LanguageSelectorProps {
   language: string;
   onChange: (language: string) => void;
-  onCreateNew?: () => void;
   onViewLanguage?: (languageId: string) => void;
   onDeleteLanguage?: (languageId: string) => void;
   refreshTrigger?: number;
@@ -53,7 +52,7 @@ const languages = [
   { value: 'visual_basic', label: 'Visual Basic', id: 84, icon: 'devicon-visualbasic-plain' }
 ];
 
-export default function LanguageSelector({ language, onChange, onCreateNew, onViewLanguage, onDeleteLanguage, refreshTrigger }: LanguageSelectorProps) {
+export default function LanguageSelector({ language, onChange, onViewLanguage, onDeleteLanguage, refreshTrigger }: LanguageSelectorProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [customLanguages, setCustomLanguages] = useState<Record<string, { name: string; extension: string; keywords: Record<string, string> }>>({});
@@ -119,12 +118,6 @@ export default function LanguageSelector({ language, onChange, onCreateNew, onVi
 
   const handleSelect = (langValue: string) => {
     onChange(langValue);
-    setIsOpen(false);
-    setSearchTerm('');
-  };
-
-  const handleCreateNew = () => {
-    onCreateNew?.();
     setIsOpen(false);
     setSearchTerm('');
   };
@@ -221,23 +214,6 @@ export default function LanguageSelector({ language, onChange, onCreateNew, onVi
 
           {/* Language List */}
           <div className="overflow-y-auto max-h-64">
-            {/* Create New Language Button */}
-            <button
-              onClick={handleCreateNew}
-              className="w-full px-4 py-2 text-left hover:opacity-70 transition-all duration-150 font-medium text-sm hover:translate-x-1 flex items-center gap-2 border-b"
-              style={{
-                backgroundColor: 'var(--background)',
-                color: 'var(--foreground)',
-                borderColor: theme === 'dark' ? '#374151' : '#e5e7eb'
-              }}
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <line x1="12" y1="5" x2="12" y2="19" />
-                <line x1="5" y1="12" x2="19" y2="12" />
-              </svg>
-              <span>Create Language</span>
-            </button>
-
             {/* Custom Languages Section */}
             {customLanguageEntries.length > 0 && (
               <>

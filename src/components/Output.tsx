@@ -61,7 +61,7 @@ export default function Output({
       <div className="p-2 sm:p-3 lg:p-4 xl:p-6 pb-2 sm:pb-3 lg:pb-4" style={{ backgroundColor: 'var(--background)' }}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 sm:gap-3">
-            <div className="text-base sm:text-lg lg:text-xl font-light" style={{ color: 'var(--foreground)' }}>Output</div>
+            <div className="text-sm sm:text-base lg:text-lg xl:text-xl font-light" style={{ color: 'var(--foreground)' }}>Output</div>
             {onClear && (output || error) && !isLoading && (
               <button
                 onClick={onClear}
@@ -80,7 +80,7 @@ export default function Output({
             )}
           </div>
           {showStats && (
-            <div className="flex items-center gap-1 sm:gap-2 lg:gap-4 text-xs font-mono opacity-60" style={{ color: 'var(--foreground)' }}>
+            <div className="flex items-center gap-1 sm:gap-2 lg:gap-4 text-[10px] sm:text-xs font-mono opacity-60" style={{ color: 'var(--foreground)' }}>
               {executionTime !== null && (
                 <span>{formatExecutionTime(executionTime)}</span>
               )}
@@ -92,12 +92,12 @@ export default function Output({
         </div>
       </div>
 
-      <div className="flex-1 flex flex-col p-2 sm:p-3 lg:p-4 xl:p-6 font-mono text-sm leading-relaxed" style={{ backgroundColor: 'var(--background)' }}>
+      <div className="flex-1 flex flex-col p-2 sm:p-3 lg:p-4 xl:p-6 font-mono text-[11px] sm:text-sm leading-relaxed" style={{ backgroundColor: 'var(--background)' }}>
         {/* Input Section - Always show if onStdinChange is provided */}
         {onStdinChange && (
           <div className="mb-3 sm:mb-4">
-            <label className="block text-xs font-medium mb-1 sm:mb-2 opacity-70" style={{ color: 'var(--foreground)' }}>
-              Input for the program (optional):
+            <label className="block text-[10px] sm:text-xs font-medium mb-1 sm:mb-2 opacity-70" style={{ color: 'var(--foreground)' }}>
+              Input (optional)
             </label>
             <textarea
               value={stdin}
@@ -118,8 +118,8 @@ export default function Output({
                   }, 0);
                 }
               }}
-              placeholder="Enter input for your program..."
-              className="w-full h-12 sm:h-16 lg:h-20 px-2 sm:px-3 py-2 text-xs sm:text-sm font-mono resize-none border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-400 dark:focus:ring-gray-600 transition-colors"
+              placeholder="Enter input..."
+              className="w-full h-12 sm:h-16 lg:h-20 px-2 sm:px-3 py-2 text-[11px] sm:text-xs lg:text-sm font-mono resize-none border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-400 dark:focus:ring-gray-600 transition-colors placeholder:text-[11px] sm:placeholder:text-xs lg:placeholder:text-sm"
               style={{
                 backgroundColor: 'var(--background)',
                 color: 'var(--foreground)',
@@ -129,9 +129,6 @@ export default function Output({
                   : '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)'
               }}
             />
-            <div className="text-xs opacity-60 mt-1" style={{ color: 'var(--foreground)' }}>
-              Tip: Enter each input value on a new line.
-            </div>
           </div>
         )}
 
@@ -156,7 +153,7 @@ export default function Output({
                   {onAIFix && (
                     <span
                       onClick={onAIFix}
-                      className="group inline-flex items-center gap-1.5 cursor-pointer hover:opacity-70 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity duration-200 text-xs font-semibold tracking-wide"
+                      className="group inline-flex items-center gap-1.5 cursor-pointer hover:opacity-70 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity duration-200 text-[10px] sm:text-xs font-semibold tracking-wide"
                       style={{
                         color: 'var(--foreground)',
                         fontFamily: 'SF Pro Display, -apple-system, BlinkMacSystemFont, system-ui, sans-serif'
@@ -176,7 +173,7 @@ export default function Output({
                 </div>
               ) : (
                 <div style={{ color: 'var(--foreground)' }} className="opacity-50 animate-fade-in">
-                  Click Run to execute your code
+                  Run code to see output
                 </div>
               )}
             </>

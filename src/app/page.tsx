@@ -216,7 +216,7 @@ Module Program
 End Module`,
 
   sanskrit: `वद("नमस्ते विश्व!");
-वद("पायज़न में आपका स्वागत है!");`
+वद("एक्सुर में आपका स्वागत है!");`
 };
 
 interface FileTab {
@@ -682,7 +682,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-white dark:bg-black text-black dark:text-white transition-colors" style={{ backgroundColor: 'var(--background)', color: 'var(--foreground)' }}>
       {/* Header */}
-      <header className="px-3 sm:px-4 lg:px-8 py-3 sm:py-4 lg:py-6" style={{ backgroundColor: 'var(--background)' }}>
+      <header className="px-3 sm:px-4 lg:px-8 py-2 sm:py-3 lg:py-4" style={{ backgroundColor: 'var(--background)' }}>
         <div className="flex items-center justify-between">
           <div 
             className="flex items-center gap-2 sm:gap-3 cursor-pointer hover:opacity-80 transition-opacity duration-200"
@@ -695,7 +695,6 @@ export default function Home() {
             <LanguageSelector
               language={language}
               onChange={handleLanguageChange}
-              onCreateNew={() => setShowCustomLanguageCreator(true)}
               onViewLanguage={handleViewLanguage}
               onDeleteLanguage={handleDeleteLanguage}
               refreshTrigger={customLanguagesRefresh}
@@ -730,7 +729,7 @@ export default function Home() {
       </header>
 
       {/* Main Content */}
-      <div className="h-[calc(100vh-120px)] sm:h-[calc(100vh-128px)] lg:h-[calc(100vh-149px)]">
+      <div className="h-[calc(100vh-100px)] sm:h-[calc(100vh-108px)] lg:h-[calc(100vh-120px)]">
         {/* Mobile/Tablet Layout - Stacked vertically on small screens, resizable on medium+ */}
         <div className="xl:hidden h-full">
           {/* Mobile Portrait - Stacked Layout */}
@@ -1733,7 +1732,7 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="text-center py-4 text-xs opacity-60" style={{ color: 'var(--foreground)' }}>
-        © 2025 Taizun. All rights reserved.
+        © 2026 <a href="https://t4z.in" target="_blank" rel="noopener noreferrer" className="font-medium hover:opacity-80 transition-opacity">Taizun</a>. All rights reserved.
       </footer>
     </div>
   );

@@ -371,7 +371,7 @@ export default function CodeEditor({
         options={{
           // Basic editor options
           minimap: { enabled: false },
-          fontSize: 15,
+          fontSize: 13,
           lineNumbers: 'on',
           roundedSelection: false,
           scrollBeyondLastLine: false,
