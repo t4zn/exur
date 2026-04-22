@@ -1,4 +1,4 @@
-`z# Pyzun - Online Code Compiler
+`z# Exur - Online Code Compiler
 
 A minimal, modern online code compiler built with Next.js that supports C, C++, Java, and Python. Features a clean black-and-white design with Monaco Editor and Judge0 API integration.
 
@@ -26,7 +26,7 @@ A minimal, modern online code compiler built with Next.js that supports C, C++, 
 1. Clone the repository:
 ```bash
 git clone <your-repo-url>
-cd pyzun
+cd exur
 ```
 
 2. Install dependencies:

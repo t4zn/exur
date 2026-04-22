@@ -5,7 +5,7 @@ interface CustomLanguage {
 }
 
 class CustomLanguageService {
-  private static readonly STORAGE_KEY = 'pyzun_custom_languages';
+  private static readonly STORAGE_KEY = 'exur_custom_languages';
 
   static saveLanguage(language: CustomLanguage): void {
     const languages = this.getLanguages();

@@ -20,7 +20,7 @@ const leagueSpartan = League_Spartan({
 });
 
 export const metadata: Metadata = {
-  title: "Pyzun - AI Code Compiler",
+  title: "Exur - AI Code Compiler",
   description: "A minimal, modern AI-powered code compiler with intelligent error fixing and code suggestions",
 };
 

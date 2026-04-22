@@ -40,16 +40,16 @@ _start:
 
   bash: `#!/bin/bash
 echo "Hello, World!"
-echo "Welcome to Pyzun!"`,
+echo "Welcome to Exur!"`,
 
   basic: `print "Hello, World!"
-print "Welcome to Pyzun!"`,
+print "Welcome to Exur!"`,
 
   c: `#include <stdio.h>
 
 int main() {
     printf("Hello, World!\\n");
-    printf("Welcome to Pyzun!\\n");
+    printf("Welcome to Exur!\\n");
     return 0;
 }`,
 
@@ -58,7 +58,7 @@ using namespace std;
 
 int main() {
     cout << "Hello, World!" << endl;
-    cout << "Welcome to Pyzun!" << endl;
+    cout << "Welcome to Exur!" << endl;
     return 0;
 }`,
 
@@ -67,19 +67,19 @@ int main() {
 class Program {
     static void Main() {
         Console.WriteLine("Hello, World!");
-        Console.WriteLine("Welcome to Pyzun!");
+        Console.WriteLine("Welcome to Exur!");
     }
 }`,
 
   clojure: `(println "Hello, World!")
-(println "Welcome to Pyzun!")`,
+(println "Welcome to Exur!")`,
 
   cobol: `       IDENTIFICATION DIVISION.
        PROGRAM-ID. HELLO.
        
        PROCEDURE DIVISION.
        DISPLAY "Hello, World!".
-       DISPLAY "Welcome to Pyzun!".
+       DISPLAY "Welcome to Exur!".
        STOP RUN.
 `,
 
@@ -87,22 +87,22 @@ class Program {
 
 void main() {
     writeln("Hello, World!");
-    writeln("Welcome to Pyzun!");
+    writeln("Welcome to Exur!");
 }`,
 
   elixir: `IO.puts("Hello, World!")
-IO.puts("Welcome to Pyzun!")`,
+IO.puts("Welcome to Exur!")`,
 
   erlang: `-module(main).
 -export([start/0]).
 
 start() ->
     io:format("Hello, World!~n"),
-    io:format("Welcome to Pyzun!~n").`,
+    io:format("Welcome to Exur!~n").`,
 
   fortran: `program hello
     print *, 'Hello, World!'
-    print *, 'Welcome to Pyzun!'
+    print *, 'Welcome to Exur!'
 end program hello`,
 
   go: `package main
@@ -111,107 +111,107 @@ import "fmt"
 
 func main() {
     fmt.Println("Hello, World!")
-    fmt.Println("Welcome to Pyzun!")
+    fmt.Println("Welcome to Exur!")
 }`,
 
   haskell: `main = do
     putStrLn "Hello, World!"
-    putStrLn "Welcome to Pyzun!"`,
+    putStrLn "Welcome to Exur!"`,
 
   java: `public class Main {
     public static void main(String[] args) {
         System.out.println("Hello, World!");
-        System.out.println("Welcome to Pyzun!");
+        System.out.println("Welcome to Exur!");
     }
 }`,
 
   javascript: `console.log("Hello, World!");
-console.log("Welcome to Pyzun!");`,
+console.log("Welcome to Exur!");`,
 
   kotlin: `fun main() {
     println("Hello, World!")
-    println("Welcome to Pyzun!")
+    println("Welcome to Exur!")
 }`,
 
   lisp: `(write-line "Hello, World!")
-(write-line "Welcome to Pyzun!")`,
+(write-line "Welcome to Exur!")`,
 
   lua: `print("Hello, World!")
-print("Welcome to Pyzun!")`,
+print("Welcome to Exur!")`,
 
   objective_c: `#import <Foundation/Foundation.h>
 
 int main() {
     @autoreleasepool {
         NSLog(@"Hello, World!");
-        NSLog(@"Welcome to Pyzun!");
+        NSLog(@"Welcome to Exur!");
     }
     return 0;
 }`,
 
   ocaml: `print_endline "Hello, World!";;
-print_endline "Welcome to Pyzun!";;`,
+print_endline "Welcome to Exur!";;`,
 
   octave: `disp('Hello, World!')
-disp('Welcome to Pyzun!')`,
+disp('Welcome to Exur!')`,
 
   pascal: `program Hello;
 begin
     writeln('Hello, World!');
-    writeln('Welcome to Pyzun!');
+    writeln('Welcome to Exur!');
 end.`,
 
   perl: `print "Hello, World!\\n";
-print "Welcome to Pyzun!\\n";`,
+print "Welcome to Exur!\\n";`,
 
   php: `<?php
 echo "Hello, World!\\n";
-echo "Welcome to Pyzun!\\n";
+echo "Welcome to Exur!\\n";
 ?>`,
 
   prolog: `:- initialization(main).
 
 main :-
     write('Hello, World!'), nl,
-    write('Welcome to Pyzun!'), nl,
+    write('Welcome to Exur!'), nl,
     halt.`,
 
   python: `print("Hello, World!")
-print("Welcome to Pyzun!")`,
+print("Welcome to Exur!")`,
 
   r: `cat("Hello, World!\\n")
-cat("Welcome to Pyzun!\\n")`,
+cat("Welcome to Exur!\\n")`,
 
   ruby: `puts "Hello, World!"
-puts "Welcome to Pyzun!"`,
+puts "Welcome to Exur!"`,
 
   rust: `fn main() {
     println!("Hello, World!");
-    println!("Welcome to Pyzun!");
+    println!("Welcome to Exur!");
 }`,
 
   scala: `object Main {
     def main(args: Array[String]): Unit = {
         println("Hello, World!")
-        println("Welcome to Pyzun!")
+        println("Welcome to Exur!")
     }
 }`,
 
   sql: `SELECT 'Hello, World!' AS greeting;
-SELECT 'Welcome to Pyzun!' AS message;`,
+SELECT 'Welcome to Exur!' AS message;`,
 
   swift: `print("Hello, World!")
-print("Welcome to Pyzun!")`,
+print("Welcome to Exur!")`,
 
   typescript: `console.log("Hello, World!");
-console.log("Welcome to Pyzun!");`,
+console.log("Welcome to Exur!");`,
 
   visual_basic: `Imports System
 
 Module Program
     Sub Main()
         Console.WriteLine("Hello, World!")
-        Console.WriteLine("Welcome to Pyzun!")
+        Console.WriteLine("Welcome to Exur!")
     End Sub
 End Module`,
 
@@ -688,8 +688,8 @@ export default function Home() {
             className="flex items-center gap-2 sm:gap-3 cursor-pointer hover:opacity-80 transition-opacity duration-200"
             onClick={() => window.location.reload()}
           >
-            <Image src="/pyzun.svg" alt="Pyzun" width={32} height={32} className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8" />
-            <h1 className="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-medium tracking-wide" style={{ color: 'var(--foreground)', fontFamily: 'var(--font-league-spartan), sans-serif' }}>Pyzun</h1>
+            <Image src="/exur.svg" alt="Exur" width={32} height={32} className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8" />
+            <h1 className="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-medium tracking-wide" style={{ color: 'var(--foreground)', fontFamily: 'var(--font-league-spartan), sans-serif' }}>Exur</h1>
           </div>
           <div className="flex items-center gap-1 sm:gap-2 lg:gap-4 xl:gap-6">
             <LanguageSelector
