@@ -3,7 +3,7 @@
 import { Editor } from '@monaco-editor/react';
 import { useTheme } from './ThemeProvider';
 import { useEffect, useRef, useCallback } from 'react';
-import * as monaco from 'monaco-editor';
+import type { editor } from 'monaco-editor';
 import { SparkIcon } from './SparkIcon';
 import CustomLanguageService from '../services/customLanguageService';
 
@@ -66,8 +66,8 @@ export default function CodeEditor({
   onRejectDiff 
 }: EditorProps) {
   const { theme } = useTheme();
-  const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
-  const monacoRef = useRef<typeof monaco | null>(null);
+  const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
+  const monacoRef = useRef<any>(null);
 
   const decorationIds = useRef<string[]>([]);
 
@@ -205,7 +205,7 @@ export default function CodeEditor({
 
     const originalLines = value.split('\n');
     const suggestedLines = suggestedCode.split('\n');
-    const decorations: monaco.editor.IModelDeltaDecoration[] = [];
+    const decorations: editor.IModelDeltaDecoration[] = [];
     
     // Since we're showing the suggested code in the editor, we highlight the changes
     // We'll use green for lines that were changed/added
@@ -245,8 +245,8 @@ export default function CodeEditor({
     decorationIds.current = editorRef.current.deltaDecorations(decorationIds.current, decorations);
   }, [showDiff, suggestedCode, value]);
 
-  const handleEditorDidMount = (editor: monaco.editor.IStandaloneCodeEditor, monacoInstance: typeof monaco) => {
-    editorRef.current = editor;
+  const handleEditorDidMount = (editorInstance: editor.IStandaloneCodeEditor, monacoInstance: any) => {
+    editorRef.current = editorInstance;
     monacoRef.current = monacoInstance;
     applyDiffDecorations();
     registerCustomLanguageHighlighting(monacoInstance);
@@ -564,7 +564,7 @@ export default function CodeEditor({
 
           // Enable Emmet for HTML, CSS, and related languages
           monaco.languages.registerCompletionItemProvider('html', {
-            provideCompletionItems: (model, position) => {
+            provideCompletionItems: (model: any, position: any) => {
               const word = model.getWordUntilPosition(position);
               const range = {
                 startLineNumber: position.lineNumber,
@@ -597,9 +597,9 @@ export default function CodeEditor({
           });
 
           // Add custom snippets for popular languages
-          const addLanguageSnippets = (languageId: string, snippets: Omit<monaco.languages.CompletionItem, 'range' | 'kind'>[]) => {
+          const addLanguageSnippets = (languageId: string, snippets: any[]) => {
             monaco.languages.registerCompletionItemProvider(languageId, {
-              provideCompletionItems: (model, position) => {
+              provideCompletionItems: (model: any, position: any) => {
                 const word = model.getWordUntilPosition(position);
                 const range = {
                   startLineNumber: position.lineNumber,
