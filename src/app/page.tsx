@@ -700,20 +700,20 @@ export default function Home() {
                 const roomId = uuidv4().slice(0, 8);
                 window.location.href = `/editor/${roomId}`;
               }}
-              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg text-[10px] sm:text-xs font-medium transition-all duration-200 hover:opacity-70"
+              className="flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-200 hover:opacity-90 hover:scale-105 shadow-lg hover:shadow-xl"
               style={{
-                backgroundColor: theme === 'dark' ? '#ffffff' : '#000000',
-                color: theme === 'dark' ? '#000000' : '#ffffff',
+                backgroundColor: '#8141e6',
+                color: '#ffffff',
               }}
               aria-label="Start collaborative session"
             >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="hidden sm:block">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="hidden sm:block">
                 <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
                 <circle cx="9" cy="7" r="4" />
                 <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
                 <path d="M16 3.13a4 4 0 0 1 0 7.75" />
               </svg>
-              Collaborate
+              Connect
             </button>
             <LanguageSelector
               language={language}
