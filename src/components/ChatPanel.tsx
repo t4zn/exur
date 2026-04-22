@@ -149,8 +149,8 @@ export default function ChatPanel({
       }}>
         <div ref={scrollRef} className="h-full overflow-y-auto px-3 py-3 space-y-3 scrollbar-hide">
           {messages.length === 0 && (
-            <div className="text-center py-8 text-xs" style={{ color: 'var(--foreground)', opacity: 0.4 }}>
-              Say hello! 👋<br /><span style={{ opacity: 0.6 }}>Messages appear here</span>
+            <div className="text-center py-8 text-xs" style={{ color: 'var(--foreground)', opacity: 0.3 }}>
+              No messages yet
             </div>
           )}
 

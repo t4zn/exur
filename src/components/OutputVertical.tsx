@@ -50,7 +50,7 @@ export default function OutputVertical({
     <div className="h-full flex flex-col" style={{ backgroundColor: 'var(--background)' }}>
       {/* Input Section */}
       {onStdinChange && (
-        <div className="px-2 sm:px-3 lg:px-4 xl:px-6 pt-2 sm:pt-3 lg:pt-4 xl:pt-6 pb-2 sm:pb-3">
+        <div className="px-2 sm:px-3 lg:px-4 xl:px-6 pt-2 sm:pt-3 lg:pt-4 xl:pt-6 pb-2 sm:pb-3 max-w-md">
           <label className="block text-base font-medium mb-1 sm:mb-2" style={{ color: 'var(--foreground)' }}>
             Input
           </label>
@@ -73,15 +73,13 @@ export default function OutputVertical({
               }
             }}
             placeholder="Enter input..."
-            className="w-full px-2 sm:px-3 py-2 text-[11px] sm:text-xs lg:text-sm font-mono resize-none border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-400 dark:focus:ring-gray-600 transition-colors placeholder:text-[11px] sm:placeholder:text-xs lg:placeholder:text-sm"
             rows={3}
+            className="w-full px-3 py-2 text-xs font-mono resize-none rounded-2xl outline-none placeholder:opacity-40"
             style={{
-              backgroundColor: 'var(--background)',
+              backgroundColor: theme === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
               color: 'var(--foreground)',
               fontFamily: 'var(--font-geist-mono), monospace',
-              boxShadow: theme === 'dark'
-                ? '0 0 0 1px rgba(255, 255, 255, 0.1), 0 4px 6px -1px rgba(255, 255, 255, 0.1), 0 2px 4px -1px rgba(255, 255, 255, 0.06)'
-                : '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)'
+              border: `1px solid ${theme === 'dark' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`
             }}
           />
         </div>
@@ -91,7 +89,7 @@ export default function OutputVertical({
       <div className="px-2 sm:px-3 lg:px-4 xl:px-6 pb-1 sm:pb-1.5 lg:pb-2" style={{ backgroundColor: 'var(--background)' }}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 sm:gap-3">
-            <div className="text-base font-medium" style={{ color: 'var(--foreground)' }}>Output</div>
+            <div className="text-lg font-medium" style={{ color: 'var(--foreground)' }}>Output</div>
             {onClear && (output || error) && !isLoading && (
               <button
                 onClick={onClear}

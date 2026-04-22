@@ -1073,7 +1073,7 @@ export default function Home() {
           {/* Tablet/Medium screens - Resizable panels */}
           <div className="hidden md:block h-full">
             <ResizablePanels
-              defaultLeftWidth={60}
+              defaultLeftWidth={65}
               minLeftWidth={30}
               maxLeftWidth={80}
               leftPanel={
@@ -1397,7 +1397,7 @@ export default function Home() {
         {/* Desktop Layout - Resizable panels */}
         <div className="hidden xl:block h-full">
           <ResizablePanels
-            defaultLeftWidth={50}
+            defaultLeftWidth={60}
             minLeftWidth={25}
             maxLeftWidth={75}
             leftPanel={

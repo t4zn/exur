@@ -19,18 +19,62 @@ const STORAGE_PREFIX = 'exur-collab-';
 function saveToLocal(roomId: string, code: string) { try { localStorage.setItem(`${STORAGE_PREFIX}${roomId}`, code); } catch {} }
 
 const defaultCodes: Record<string, { code: string; filename: string }> = {
-  python: { code: 'print("Hello, World!")', filename: 'main.py' },
-  javascript: { code: 'console.log("Hello, World!");', filename: 'script.js' },
-  typescript: { code: 'console.log("Hello, World!");', filename: 'script.ts' },
-  java: { code: 'public class Main {\n    public static void main(String[] args) {\n        System.out.println("Hello, World!");\n    }\n}', filename: 'Main.java' },
-  cpp: { code: '#include <iostream>\nusing namespace std;\nint main() {\n    cout << "Hello, World!" << endl;\n    return 0;\n}', filename: 'main.cpp' },
-  c: { code: '#include <stdio.h>\nint main() {\n    printf("Hello, World!\\n");\n    return 0;\n}', filename: 'main.c' },
-  go: { code: 'package main\nimport "fmt"\nfunc main() {\n    fmt.Println("Hello, World!")\n}', filename: 'main.go' },
-  rust: { code: 'fn main() {\n    println!("Hello, World!");\n}', filename: 'main.rs' },
-  ruby: { code: 'puts "Hello, World!"', filename: 'main.rb' },
-  php: { code: '<?php\necho "Hello, World!\\n";\n?>', filename: 'index.php' },
-  swift: { code: 'print("Hello, World!")', filename: 'main.swift' },
-  kotlin: { code: 'fun main() {\n    println("Hello, World!")\n}', filename: 'Main.kt' },
+  assembly: { 
+    code: `section .data
+    hello db 'Hello, World!', 10, 0
+    hello_len equ $ - hello
+    
+section .text
+    global _start
+    
+_start:
+    ; Print hello
+    mov eax, 4
+    mov ebx, 1
+    mov ecx, hello
+    mov edx, hello_len
+    int 0x80
+    
+    ; Exit
+    mov eax, 1
+    mov ebx, 0
+    int 0x80`, 
+    filename: 'main.asm' 
+  },
+  bash: { code: `#!/bin/bash\necho "Hello, World!"\necho "Welcome to Exur!"`, filename: 'script.sh' },
+  basic: { code: `print "Hello, World!"\nprint "Welcome to Exur!"`, filename: 'main.bas' },
+  c: { code: `#include <stdio.h>\n\nint main() {\n    printf("Hello, World!\\n");\n    printf("Welcome to Exur!\\n");\n    return 0;\n}`, filename: 'main.c' },
+  cpp: { code: `#include <iostream>\nusing namespace std;\n\nint main() {\n    cout << "Hello, World!" << endl;\n    cout << "Welcome to Exur!" << endl;\n    return 0;\n}`, filename: 'main.cpp' },
+  csharp: { code: `using System;\n\nclass Program {\n    static void Main() {\n        Console.WriteLine("Hello, World!");\n        Console.WriteLine("Welcome to Exur!");\n    }\n}`, filename: 'Program.cs' },
+  clojure: { code: `(println "Hello, World!")\n(println "Welcome to Exur!")`, filename: 'main.clj' },
+  cobol: { code: `       IDENTIFICATION DIVISION.\n       PROGRAM-ID. HELLO.\n       \n       PROCEDURE DIVISION.\n       DISPLAY "Hello, World!".\n       DISPLAY "Welcome to Exur!".\n       STOP RUN.\n`, filename: 'main.cob' },
+  d: { code: `import std.stdio;\n\nvoid main() {\n    writeln("Hello, World!");\n    writeln("Welcome to Exur!");\n}`, filename: 'main.d' },
+  elixir: { code: `IO.puts("Hello, World!")\nIO.puts("Welcome to Exur!")`, filename: 'main.ex' },
+  erlang: { code: `-module(main).\n-export([start/0]).\n\nstart() ->\n    io:format("Hello, World!~n"),\n    io:format("Welcome to Exur!~n").`, filename: 'main.erl' },
+  fortran: { code: `program hello\n    print *, 'Hello, World!'\n    print *, 'Welcome to Exur!'\nend program hello`, filename: 'main.f90' },
+  go: { code: `package main\n\nimport "fmt"\n\nfunc main() {\n    fmt.Println("Hello, World!")\n    fmt.Println("Welcome to Exur!")\n}`, filename: 'main.go' },
+  haskell: { code: `main = do\n    putStrLn "Hello, World!"\n    putStrLn "Welcome to Exur!"`, filename: 'main.hs' },
+  java: { code: `public class Main {\n    public static void main(String[] args) {\n        System.out.println("Hello, World!");\n        System.out.println("Welcome to Exur!");\n    }\n}`, filename: 'Main.java' },
+  javascript: { code: `console.log("Hello, World!");\nconsole.log("Welcome to Exur!");`, filename: 'script.js' },
+  kotlin: { code: `fun main() {\n    println("Hello, World!")\n    println("Welcome to Exur!")\n}`, filename: 'Main.kt' },
+  lisp: { code: `(write-line "Hello, World!")\n(write-line "Welcome to Exur!")`, filename: 'main.lisp' },
+  lua: { code: `print("Hello, World!")\nprint("Welcome to Exur!")`, filename: 'main.lua' },
+  objective_c: { code: `#import <Foundation/Foundation.h>\n\nint main() {\n    @autoreleasepool {\n        NSLog(@"Hello, World!");\n        NSLog(@"Welcome to Exur!");\n    }\n    return 0;\n}`, filename: 'main.m' },
+  ocaml: { code: `print_endline "Hello, World!";;\nprint_endline "Welcome to Exur!";;`, filename: 'main.ml' },
+  octave: { code: `disp('Hello, World!')\ndisp('Welcome to Exur!')`, filename: 'main.m' },
+  pascal: { code: `program Hello;\nbegin\n    writeln('Hello, World!');\n    writeln('Welcome to Exur!');\nend.`, filename: 'main.pas' },
+  perl: { code: `print "Hello, World!\\n";\nprint "Welcome to Exur!\\n";`, filename: 'script.pl' },
+  php: { code: `<?php\necho "Hello, World!\\n";\necho "Welcome to Exur!\\n";\n?>`, filename: 'index.php' },
+  prolog: { code: `:- initialization(main).\n\nmain :-\n    write('Hello, World!'), nl,\n    write('Welcome to Exur!'), nl,\n    halt.`, filename: 'main.pl' },
+  python: { code: `print("Hello, World!")\nprint("Welcome to Exur!")`, filename: 'main.py' },
+  r: { code: `cat("Hello, World!\\n")\ncat("Welcome to Exur!\\n")`, filename: 'script.r' },
+  ruby: { code: `puts "Hello, World!"\nputs "Welcome to Exur!"`, filename: 'main.rb' },
+  rust: { code: `fn main() {\n    println!("Hello, World!");\n    println!("Welcome to Exur!");\n}`, filename: 'main.rs' },
+  scala: { code: `object Main {\n    def main(args: Array[String]): Unit = {\n        println("Hello, World!")\n        println("Welcome to Exur!")\n    }\n}`, filename: 'Main.scala' },
+  sql: { code: `SELECT 'Hello, World!' AS greeting;\nSELECT 'Welcome to Exur!' AS message;`, filename: 'query.sql' },
+  swift: { code: `print("Hello, World!")\nprint("Welcome to Exur!")`, filename: 'main.swift' },
+  typescript: { code: `console.log("Hello, World!");\nconsole.log("Welcome to Exur!");`, filename: 'script.ts' },
+  visual_basic: { code: `Imports System\n\nModule Program\n    Sub Main()\n        Console.WriteLine("Hello, World!")\n        Console.WriteLine("Welcome to Exur!")\n    End Sub\nEnd Module`, filename: 'Main.vb' },
 };
 
 export default function CollaborativeEditorPage({ params }: { params: Promise<{ roomId: string }> }) {
@@ -39,9 +83,14 @@ export default function CollaborativeEditorPage({ params }: { params: Promise<{ 
   const { theme, toggleTheme } = useTheme();
 
   // State
-  const [files, setFiles] = useState<FileTab[]>([{ id: '1', filename: 'script.js', language: 'javascript', code: '// Connecting...' }]);
+  const [files, setFiles] = useState<FileTab[]>([{ 
+    id: '1', 
+    filename: defaultCodes.python.filename, 
+    language: 'python', 
+    code: defaultCodes.python.code 
+  }]);
   const [activeFileId, setActiveFileId] = useState('1');
-  const [language, setLanguage] = useState('javascript');
+  const [language, setLanguage] = useState('python');
   const [remoteUsers, setRemoteUsers] = useState<Map<string, RemoteUser>>(new Map());
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [myInfo, setMyInfo] = useState<{ socketId: string; username: string; color: string } | null>(null);
@@ -57,6 +106,7 @@ export default function CollaborativeEditorPage({ params }: { params: Promise<{ 
   const [typingUsers, setTypingUsers] = useState<{ socketId: string; username: string }[]>([]);
   const [isEditingFilename, setIsEditingFilename] = useState(false);
   const [editingName, setEditingName] = useState('');
+  const [isCodeCopied, setIsCodeCopied] = useState(false);
   const isRemoteUpdateRef = useRef(false);
   const fileIdCounter = useRef(2);
 
@@ -215,56 +265,112 @@ export default function CollaborativeEditorPage({ params }: { params: Promise<{ 
     setIsLinkCopied(true); setTimeout(() => setIsLinkCopied(false), 2000);
   };
 
+  const handleCopyCode = async () => {
+    try {
+      await navigator.clipboard.writeText(code);
+      setIsCodeCopied(true);
+      setTimeout(() => setIsCodeCopied(false), 2500);
+    } catch {
+      const textArea = document.createElement('textarea');
+      textArea.value = code;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      setIsCodeCopied(true);
+      setTimeout(() => setIsCodeCopied(false), 2500);
+    }
+  };
+
+  const handleDownloadCode = () => {
+    const blob = new Blob([code], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = activeFile?.filename || 'code.txt';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   const remoteCursorsArray = Array.from(remoteUsers.values());
 
   // Tab bar component
   const renderTabs = () => (
-    <div className="flex items-center overflow-x-auto scrollbar-hide" style={{ borderBottom: `1px solid ${theme === 'dark' ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}` }}>
+    <div className="flex items-center overflow-x-auto scrollbar-hide">
       {files.map((file) => (
         <div
           key={file.id}
-          className={`flex items-center gap-1.5 px-3 py-1.5 cursor-pointer group min-w-0 transition-all duration-200 ${file.id === activeFileId ? 'shadow-sm' : ''}`}
+          className={`flex items-center gap-2 px-3 py-2 cursor-pointer group min-w-0 rounded-t-md transition-all duration-200 ${file.id === activeFileId ? 'shadow-sm' : 'hover:bg-gray-50 dark:hover:bg-gray-800'}`}
           style={{
-            backgroundColor: file.id === activeFileId ? (theme === 'dark' ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.03)') : 'transparent',
-            borderBottom: file.id === activeFileId ? '2px solid #fbbf24' : '2px solid transparent',
+            backgroundColor: file.id === activeFileId && theme === 'dark' ? '#1e1e1e' : 'transparent',
+            boxShadow: file.id === activeFileId ? '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)' : 'none'
           }}
           onClick={() => switchFile(file.id)}
-          onDoubleClick={() => startRenaming(file)}
         >
+          {/* File Icon */}
+          <div className="flex-shrink-0">
+            <i className={`devicon-${file.language}-plain`} style={{ fontSize: '14px', color: file.id === activeFileId ? '#fbbf24' : 'currentColor' }}></i>
+          </div>
+
+          {/* Filename */}
           {isEditingFilename && file.id === activeFileId ? (
             <input
-              type="text" value={editingName} autoFocus
+              type="text" 
+              value={editingName} 
+              autoFocus
               onChange={(e) => setEditingName(e.target.value)}
               onBlur={() => finishRenaming(file.id)}
-              onKeyDown={(e) => { if (e.key === 'Enter') finishRenaming(file.id); if (e.key === 'Escape') setIsEditingFilename(false); }}
-              className="bg-transparent text-xs font-mono outline-none w-20"
+              onKeyDown={(e) => { 
+                if (e.key === 'Enter') finishRenaming(file.id); 
+                if (e.key === 'Escape') setIsEditingFilename(false); 
+              }}
+              className="bg-transparent text-xs font-medium outline-none min-w-0"
               style={{ color: 'var(--foreground)' }}
               onClick={(e) => e.stopPropagation()}
+              onFocus={(e) => e.target.select()}
             />
           ) : (
-            <span className="text-xs font-mono truncate max-w-[120px]" style={{ color: 'var(--foreground)', opacity: file.id === activeFileId ? 1 : 0.5 }}>
+            <span 
+              className="text-xs font-medium truncate min-w-0" 
+              style={{ color: 'var(--foreground)' }}
+              onDoubleClick={() => file.id === activeFileId && startRenaming(file)}
+            >
               {file.filename}
             </span>
           )}
+
+          {/* Edit Button - Only show for active file on hover */}
+          {file.id === activeFileId && (
+            <button
+              onClick={(e) => { e.stopPropagation(); startRenaming(file); }}
+              className="flex-shrink-0 opacity-0 group-hover:opacity-60 hover:opacity-100 transition-opacity p-1"
+              style={{ color: 'var(--foreground)' }}
+              title="Edit filename"
+            >
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="m13.5 3.5-11 11V19h4.5l11-11a1.5 1.5 0 0 0 0-2.12l-2.38-2.38a1.5 1.5 0 0 0-2.12 0Z" />
+                <path d="m13.5 6.5 3 3" />
+              </svg>
+            </button>
+          )}
+
+          {/* Close Button */}
           {files.length > 1 && (
             <button
               onClick={(e) => { e.stopPropagation(); closeFile(file.id); }}
-              className="opacity-0 group-hover:opacity-60 hover:opacity-100 transition-opacity p-0.5"
+              className={`flex-shrink-0 transition-opacity p-1 ${file.id === activeFileId ? 'opacity-60 hover:opacity-100' : 'opacity-0 group-hover:opacity-60 hover:opacity-100'}`}
               style={{ color: 'var(--foreground)' }}
             >
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
               </svg>
             </button>
           )}
         </div>
       ))}
-      {/* New file button */}
-      <button onClick={createNewFile} className="p-1.5 mx-1 transition-opacity hover:opacity-70" style={{ color: 'var(--foreground)', opacity: 0.4 }} title="New file">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
-        </svg>
-      </button>
     </div>
   );
 
@@ -286,11 +392,44 @@ export default function CollaborativeEditorPage({ params }: { params: Promise<{ 
           </div>
         </div>
         <div className="flex items-center gap-1">
-          <button onClick={handleCopyLink} className="flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-medium transition-all duration-200 hover:opacity-80" style={{ backgroundColor: isLinkCopied ? (theme === 'dark' ? 'rgba(34,197,94,0.2)' : 'rgba(34,197,94,0.1)') : '#fbbf24', color: isLinkCopied ? '#22c55e' : '#000' }}>
-            {isLinkCopied ? '✓ Copied' : '🔗 Invite'}
+          <button onClick={createNewFile} className="p-2 transition-all duration-200 min-w-[36px] min-h-[36px] flex items-center justify-center hover:opacity-70" style={{ color: 'var(--foreground)' }} aria-label="New file" title="New file">
+            <svg width={iconSize} height={iconSize} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
           </button>
-          <button onClick={() => setIsChatCollapsed(!isChatCollapsed)} className="p-2 transition-all duration-200 min-w-[36px] min-h-[36px] flex items-center justify-center hover:opacity-70" style={{ color: 'var(--foreground)' }} aria-label="Chat">
-            <svg width={iconSize} height={iconSize} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
+          <button onClick={handleCopyLink} className="p-2 transition-all duration-200 min-w-[36px] min-h-[36px] flex items-center justify-center hover:opacity-70" style={{ color: isLinkCopied ? '#22c55e' : 'var(--foreground)' }} aria-label="Copy invite link">
+            {isLinkCopied ? (
+              <svg width={iconSize} height={iconSize} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ color: '#22c55e' }}>
+                <polyline points="20,6 9,17 4,12" />
+              </svg>
+            ) : (
+              <svg width={iconSize} height={iconSize} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+              </svg>
+            )}
+          </button>
+          <button onClick={handleCopyCode} className="p-2 transition-all duration-200 min-w-[36px] min-h-[36px] flex items-center justify-center hover:opacity-70" style={{ color: 'var(--foreground)' }} aria-label="Copy code">
+            <div className="relative transition-all duration-300 ease-in-out">
+              {isCodeCopied ? (
+                <svg width={iconSize} height={iconSize} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="animate-bounce-in" style={{ color: '#fbbf24' }}>
+                  <polyline points="20,6 9,17 4,12" />
+                </svg>
+              ) : (
+                <svg width={iconSize} height={iconSize} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                </svg>
+              )}
+            </div>
+          </button>
+          <button onClick={handleDownloadCode} className="p-2 transition-all duration-200 min-w-[36px] min-h-[36px] flex items-center justify-center hover:opacity-70" style={{ color: 'var(--foreground)' }} aria-label="Download code">
+            <svg width={iconSize} height={iconSize} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7,10 12,15 17,10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
           </button>
           <button onClick={handleRunCode} disabled={isLoading} className="p-2 transition-all duration-200 disabled:opacity-50 min-w-[36px] min-h-[36px] flex items-center justify-center hover:opacity-70" style={{ color: 'var(--foreground)' }} aria-label="Run">
             {isLoading ? <span className="inline-flex"><span className="w-1 h-1 bg-current rounded-full animate-pulse" /><span className="w-1 h-1 bg-current rounded-full animate-pulse mx-0.5" style={{ animationDelay: '200ms' }} /><span className="w-1 h-1 bg-current rounded-full animate-pulse" style={{ animationDelay: '400ms' }} /></span>
@@ -344,7 +483,7 @@ export default function CollaborativeEditorPage({ params }: { params: Promise<{ 
       <div className="h-[calc(100vh-100px)] sm:h-[calc(100vh-108px)] lg:h-[calc(100vh-120px)]">
         {/* Desktop */}
         <div className="h-full hidden lg:block">
-          <ResizablePanels defaultLeftWidth={75} minLeftWidth={50} maxLeftWidth={85}
+          <ResizablePanels defaultLeftWidth={70} minLeftWidth={50} maxLeftWidth={85}
             leftPanel={
               <ResizablePanelsVertical defaultTopHeight={70} minTopHeight={40} maxTopHeight={85}
                 topPanel={<div className="h-full">{renderEditorPanel('p-3 lg:p-6', 18)}</div>}
