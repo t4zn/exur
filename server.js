@@ -120,6 +120,7 @@ app.prepare().then(() => {
       origin: [
         'https://exur.in',
         'https://www.exur.in',
+        'https://exur-849y.onrender.com',
         'http://localhost:3000',
         'http://localhost:3001'
       ],
