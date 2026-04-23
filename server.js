@@ -61,7 +61,19 @@ function createRoom(roomId) {
       },
     ],
     activeFileId: '1',
+    // Version history: Map<fileId, Array<{id, code, username, timestamp, label}>>
+    versions: new Map(),
+    // Debounce timers for auto-snapshots per file
+    _autoSnapshotTimers: new Map(),
   };
+  // Seed initial version for the default file
+  room.versions.set('1', [{
+    id: 'v-init',
+    code: 'print("Hello, World!")\nprint("Welcome to Exur!")',
+    username: 'System',
+    timestamp: Date.now(),
+    label: 'Initial code',
+  }]);
   rooms.set(roomId, room);
   return room;
 }
@@ -209,6 +221,33 @@ app.prepare().then(() => {
         fileId,
         senderId: socket.id,
       });
+
+      // Auto-snapshot: debounce 30s after last edit per file
+      const timerKey = `${roomId}-${fileId || 'main'}`;
+      if (room._autoSnapshotTimers.has(timerKey)) {
+        clearTimeout(room._autoSnapshotTimers.get(timerKey));
+      }
+      room._autoSnapshotTimers.set(timerKey, setTimeout(() => {
+        const fId = fileId || '1';
+        const user = room.users.get(socket.id);
+        const versions = room.versions.get(fId) || [];
+        const lastVersion = versions[versions.length - 1];
+        // Only snapshot if code actually changed from last version
+        if (!lastVersion || lastVersion.code !== code) {
+          const entry = {
+            id: `v-${Date.now()}`,
+            code,
+            username: user?.username || 'Unknown',
+            timestamp: Date.now(),
+            label: 'Auto-save',
+          };
+          versions.push(entry);
+          // Keep max 30 versions per file
+          if (versions.length > 30) versions.shift();
+          room.versions.set(fId, versions);
+        }
+        room._autoSnapshotTimers.delete(timerKey);
+      }, 30000));
     });
 
     // ─── language-change ──────────────────────────────────────────
@@ -367,6 +406,76 @@ app.prepare().then(() => {
         username: user.username,
         isTyping,
       });
+    });
+
+    // ─── Version history ─────────────────────────────────────────
+
+    // Manual save — user clicks "Save Version"
+    socket.on('save-version', ({ roomId, fileId, label }) => {
+      const room = rooms.get(roomId);
+      if (!room) return;
+      const user = room.users.get(socket.id);
+      const fId = fileId || '1';
+      const file = room.files.find(f => f.id === fId);
+      if (!file) return;
+
+      const versions = room.versions.get(fId) || [];
+      const entry = {
+        id: `v-${Date.now()}`,
+        code: file.code,
+        username: user?.username || 'Unknown',
+        timestamp: Date.now(),
+        label: label || 'Manual save',
+      };
+      versions.push(entry);
+      if (versions.length > 30) versions.shift();
+      room.versions.set(fId, versions);
+
+      // Notify all users in room
+      io.to(roomId).emit('version-saved', { fileId: fId, version: entry });
+    });
+
+    // Get version history for a file
+    socket.on('get-versions', ({ roomId, fileId }, callback) => {
+      const room = rooms.get(roomId);
+      if (!room) { if (callback) callback([]); return; }
+      const versions = room.versions.get(fileId || '1') || [];
+      if (callback) callback(versions);
+    });
+
+    // Revert to a specific version
+    socket.on('version-revert', ({ roomId, fileId, versionId }) => {
+      const room = rooms.get(roomId);
+      if (!room) return;
+      const fId = fileId || '1';
+      const versions = room.versions.get(fId) || [];
+      const version = versions.find(v => v.id === versionId);
+      if (!version) return;
+
+      // Update the file's code
+      const file = room.files.find(f => f.id === fId);
+      if (file) file.code = version.code;
+
+      // Save a new version marking the revert
+      const user = room.users.get(socket.id);
+      const revertEntry = {
+        id: `v-${Date.now()}`,
+        code: version.code,
+        username: user?.username || 'Unknown',
+        timestamp: Date.now(),
+        label: `Reverted to "${version.label}"`,
+      };
+      versions.push(revertEntry);
+      if (versions.length > 30) versions.shift();
+      room.versions.set(fId, versions);
+
+      // Broadcast the reverted code to all users
+      io.to(roomId).emit('code-update', {
+        code: version.code,
+        fileId: fId,
+        senderId: socket.id,
+      });
+      io.to(roomId).emit('version-reverted', { fileId: fId, version: revertEntry });
     });
 
     // ─── disconnect ───────────────────────────────────────────────

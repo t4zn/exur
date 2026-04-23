@@ -48,6 +48,14 @@ export interface RoomState {
   you: { socketId: string; username: string; color: string };
 }
 
+export interface VersionEntry {
+  id: string;
+  code: string;
+  username: string;
+  timestamp: number;
+  label: string;
+}
+
 interface UseSocketOptions {
   roomId: string;
   onRoomState?: (state: RoomState) => void;
@@ -67,6 +75,9 @@ interface UseSocketOptions {
   onFileSwitched?: (data: { fileId: string; senderId: string }) => void;
   onFileRenamed?: (data: { fileId: string; filename: string; senderId: string }) => void;
   onFileClosed?: (data: { fileId: string; newActiveFileId: string; senderId: string }) => void;
+  // Version history events
+  onVersionSaved?: (data: { fileId: string; version: VersionEntry }) => void;
+  onVersionReverted?: (data: { fileId: string; version: VersionEntry }) => void;
 }
 
 export function useSocket(opts: UseSocketOptions) {
@@ -110,6 +121,10 @@ export function useSocket(opts: UseSocketOptions) {
     socket.on('file-renamed', (data: any) => callbacksRef.current.onFileRenamed?.(data));
     socket.on('file-closed', (data: any) => callbacksRef.current.onFileClosed?.(data));
     socket.on('user-file-focus', (data: any) => callbacksRef.current.onUserFileFocus?.(data));
+
+    // Version history
+    socket.on('version-saved', (data: any) => callbacksRef.current.onVersionSaved?.(data));
+    socket.on('version-reverted', (data: any) => callbacksRef.current.onVersionReverted?.(data));
 
     return () => { socket.disconnect(); socketRef.current = null; setIsConnected(false); };
   }, [roomId]);
@@ -160,6 +175,19 @@ export function useSocket(opts: UseSocketOptions) {
     socketRef.current?.emit('file-close', { roomId, fileId });
   }, [roomId]);
 
+  // Version history emitters
+  const emitSaveVersion = useCallback((fileId: string, label?: string) => {
+    socketRef.current?.emit('save-version', { roomId, fileId, label });
+  }, [roomId]);
+
+  const emitGetVersions = useCallback((fileId: string, callback: (versions: VersionEntry[]) => void) => {
+    socketRef.current?.emit('get-versions', { roomId, fileId }, callback);
+  }, [roomId]);
+
+  const emitRevertVersion = useCallback((fileId: string, versionId: string) => {
+    socketRef.current?.emit('version-revert', { roomId, fileId, versionId });
+  }, [roomId]);
+
   return {
     isConnected,
     socketRef,
@@ -167,5 +195,6 @@ export function useSocket(opts: UseSocketOptions) {
     emitCodeChange, emitLanguageChange, emitCursorMove,
     emitChatMessage, emitChatReaction, emitChatDelete, emitChatTyping,
     emitFileCreate, emitFileSwitch, emitFileRename, emitFileClose,
+    emitSaveVersion, emitGetVersions, emitRevertVersion,
   };
 }

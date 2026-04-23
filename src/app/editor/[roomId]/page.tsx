@@ -13,7 +13,7 @@ import ResizablePanels from '../../../components/ResizablePanels';
 import ResizablePanelsVertical from '../../../components/ResizablePanelsVertical';
 import LanguageSelector from '../../../components/LanguageSelector';
 import InfoOverlay from '../../../components/info-overlay';
-import { useSocket, RemoteUser, ChatMessage, RoomState, FileTab } from '../../../hooks/useSocket';
+import { useSocket, RemoteUser, ChatMessage, RoomState, FileTab, VersionEntry } from '../../../hooks/useSocket';
 import { useJudge0 } from '../../../hooks/useJudge0';
 import { useAICodeFix } from '../../../hooks/useAICodeFix';
 
@@ -208,10 +208,28 @@ export default function CollaborativeEditorPage({ params }: { params: Promise<{ 
     });
   }, []);
 
+  // Version history state
+  const [versionHistory, setVersionHistory] = useState<VersionEntry[]>([]);
+  const [showVersionPanel, setShowVersionPanel] = useState(false);
+  const [previewVersion, setPreviewVersion] = useState<VersionEntry | null>(null);
+
+  const handleVersionSaved = useCallback((data: { fileId: string; version: VersionEntry }) => {
+    if (data.fileId === activeFileId) {
+      setVersionHistory(prev => [...prev, data.version]);
+    }
+  }, [activeFileId]);
+
+  const handleVersionReverted = useCallback((data: { fileId: string; version: VersionEntry }) => {
+    if (data.fileId === activeFileId) {
+      setVersionHistory(prev => [...prev, data.version]);
+    }
+  }, [activeFileId]);
+
   const {
     isConnected, emitCodeChange, emitLanguageChange, emitCursorMove,
     emitChatMessage, emitChatReaction, emitChatDelete, emitChatTyping,
     emitFileCreate, emitFileSwitch, emitFileRename, emitFileClose,
+    emitSaveVersion, emitGetVersions, emitRevertVersion,
   } = useSocket({
     roomId,
     onRoomState: handleRoomState, onCodeUpdate: handleCodeUpdate,
@@ -223,6 +241,8 @@ export default function CollaborativeEditorPage({ params }: { params: Promise<{ 
     onFileRenamed: handleFileRenamed, onFileClosed: handleFileClosed,
     onRoomNotFound: handleRoomNotFound,
     onUserFileFocus: handleUserFileFocus,
+    onVersionSaved: handleVersionSaved,
+    onVersionReverted: handleVersionReverted,
   });
 
   // Local code change — always update state, only suppress the first
@@ -565,6 +585,19 @@ export default function CollaborativeEditorPage({ params }: { params: Promise<{ 
               <line x1="12" y1="15" x2="12" y2="3" />
             </svg>
           </button>
+          <button onClick={() => emitSaveVersion(activeFileId, 'Manual save')} className="p-2 transition-all duration-200 min-w-[36px] min-h-[36px] flex items-center justify-center hover:opacity-70" style={{ color: '#8141e6' }} aria-label="Save version" title="Save version">
+            <svg width={iconSize} height={iconSize} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+              <polyline points="17,21 17,13 7,13 7,21" />
+              <polyline points="7,3 7,8 15,8" />
+            </svg>
+          </button>
+          <button onClick={() => { setShowVersionPanel(!showVersionPanel); if (!showVersionPanel) { emitGetVersions(activeFileId, (versions) => setVersionHistory(versions)); } }} className="p-2 transition-all duration-200 min-w-[36px] min-h-[36px] flex items-center justify-center hover:opacity-70" style={{ color: '#8141e6' }} aria-label="Version history" title="Version history">
+            <svg width={iconSize} height={iconSize} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="12" cy="12" r="10" />
+              <polyline points="12,6 12,12 16,14" />
+            </svg>
+          </button>
           <button onClick={handleRunCode} disabled={isLoading} className="p-2 transition-all duration-200 disabled:opacity-50 min-w-[36px] min-h-[36px] flex items-center justify-center hover:opacity-70" style={{ color: '#8141e6' }} aria-label="Run">
             {isLoading ? <span className="inline-flex"><span className="w-1 h-1 bg-current rounded-full animate-pulse" /><span className="w-1 h-1 bg-current rounded-full animate-pulse mx-0.5" style={{ animationDelay: '200ms' }} /><span className="w-1 h-1 bg-current rounded-full animate-pulse" style={{ animationDelay: '400ms' }} /></span>
             : <svg width={iconSize} height={iconSize} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="transition-transform hover:scale-110"><polygon points="5,3 19,12 5,21" /></svg>}
@@ -778,6 +811,112 @@ export default function CollaborativeEditorPage({ params }: { params: Promise<{ 
       </footer>
 
       <InfoOverlay />
+
+      {/* Version History Panel — slides from right */}
+      {showVersionPanel && (
+        <div className="fixed inset-0 z-50 flex justify-end">
+          <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={() => { setShowVersionPanel(false); setPreviewVersion(null); }} />
+          <div className="relative w-full max-w-sm h-full flex flex-col" style={{ backgroundColor: 'var(--background)', borderLeft: `1px solid ${theme === 'dark' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}` }}>
+            {/* Panel header */}
+            <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: `1px solid ${theme === 'dark' ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}` }}>
+              <div className="flex items-center gap-2">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8141e6" strokeWidth="2"><circle cx="12" cy="12" r="10" /><polyline points="12,6 12,12 16,14" /></svg>
+                <h3 className="text-sm font-semibold" style={{ fontFamily: 'var(--font-poppins), sans-serif', color: 'var(--foreground)' }}>Version History</h3>
+                <span className="text-[10px] px-1.5 py-0.5 rounded-full font-medium" style={{ backgroundColor: 'rgba(129,65,230,0.12)', color: '#8141e6' }}>{versionHistory.length}</span>
+              </div>
+              <button onClick={() => { setShowVersionPanel(false); setPreviewVersion(null); }} className="p-1 hover:opacity-70 transition-opacity" style={{ color: 'var(--foreground)' }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+              </button>
+            </div>
+
+            {/* Version list */}
+            <div className="flex-1 overflow-y-auto p-3 space-y-2">
+              {versionHistory.length === 0 ? (
+                <div className="text-center py-12 opacity-40">
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="mx-auto mb-3" style={{ color: 'var(--foreground)' }}><circle cx="12" cy="12" r="10" /><polyline points="12,6 12,12 16,14" /></svg>
+                  <p className="text-xs" style={{ color: 'var(--foreground)' }}>No versions yet</p>
+                  <p className="text-[10px] mt-1" style={{ color: 'var(--foreground)' }}>Auto-saves every 30s or save manually</p>
+                </div>
+              ) : (
+                [...versionHistory].reverse().map((v, idx) => {
+                  const isLatest = idx === 0;
+                  const time = new Date(v.timestamp);
+                  const timeStr = time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                  const dateStr = time.toLocaleDateString([], { month: 'short', day: 'numeric' });
+                  const isAuto = v.label === 'Auto-save';
+                  const isRevert = v.label.startsWith('Reverted');
+                  return (
+                    <div
+                      key={v.id}
+                      className="rounded-xl p-3 transition-all hover:scale-[1.01]"
+                      style={{
+                        backgroundColor: theme === 'dark' ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
+                        border: `1px solid ${previewVersion?.id === v.id ? '#8141e6' : theme === 'dark' ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`,
+                      }}
+                    >
+                      <div className="flex items-start justify-between mb-1.5">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[10px] px-1.5 py-0.5 rounded font-medium" style={{
+                            backgroundColor: isAuto ? 'rgba(34,197,94,0.1)' : isRevert ? 'rgba(239,68,68,0.1)' : 'rgba(129,65,230,0.1)',
+                            color: isAuto ? '#22c55e' : isRevert ? '#ef4444' : '#8141e6',
+                          }}>
+                            {isAuto ? '⚡ Auto' : isRevert ? '↩ Revert' : '💾 Saved'}
+                          </span>
+                          {isLatest && <span className="text-[9px] px-1 py-0.5 rounded font-semibold" style={{ backgroundColor: '#8141e6', color: '#fff' }}>Latest</span>}
+                        </div>
+                        <span className="text-[10px] opacity-40" style={{ color: 'var(--foreground)' }}>{timeStr}</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 mb-2">
+                        <span className="text-[11px] font-medium" style={{ color: 'var(--foreground)' }}>{v.username}</span>
+                        <span className="text-[10px] opacity-30" style={{ color: 'var(--foreground)' }}>· {dateStr}</span>
+                      </div>
+                      <p className="text-[10px] opacity-50 mb-2 font-mono truncate" style={{ color: 'var(--foreground)' }}>
+                        {v.code.split('\n')[0].substring(0, 60)}{v.code.length > 60 ? '...' : ''}
+                      </p>
+                      <div className="flex gap-1.5">
+                        <button
+                          onClick={() => setPreviewVersion(previewVersion?.id === v.id ? null : v)}
+                          className="flex-1 py-1.5 rounded-lg text-[10px] font-medium transition-all hover:opacity-80"
+                          style={{
+                            backgroundColor: previewVersion?.id === v.id ? '#8141e6' : theme === 'dark' ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
+                            color: previewVersion?.id === v.id ? '#fff' : 'var(--foreground)',
+                          }}
+                        >
+                          {previewVersion?.id === v.id ? 'Previewing' : 'Preview'}
+                        </button>
+                        {!isLatest && (
+                          <button
+                            onClick={() => { emitRevertVersion(activeFileId, v.id); setPreviewVersion(null); }}
+                            className="flex-1 py-1.5 rounded-lg text-[10px] font-semibold text-white transition-all hover:opacity-80"
+                            style={{ backgroundColor: '#8141e6' }}
+                          >
+                            Revert
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Version preview overlay */}
+      {previewVersion && (
+        <div className="fixed bottom-4 left-4 z-[51] max-w-md w-full rounded-xl shadow-2xl overflow-hidden" style={{ backgroundColor: 'var(--background)', border: `1px solid ${theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}` }}>
+          <div className="flex items-center justify-between px-3 py-2" style={{ backgroundColor: 'rgba(129,65,230,0.08)', borderBottom: `1px solid ${theme === 'dark' ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}` }}>
+            <span className="text-[11px] font-semibold" style={{ color: '#8141e6' }}>Preview: {previewVersion.label}</span>
+            <button onClick={() => setPreviewVersion(null)} className="p-0.5 hover:opacity-70" style={{ color: 'var(--foreground)' }}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+            </button>
+          </div>
+          <pre className="p-3 text-[11px] font-mono overflow-auto max-h-48 leading-relaxed" style={{ color: 'var(--foreground)', opacity: 0.8 }}>
+            {previewVersion.code}
+          </pre>
+        </div>
+      )}
     </div>
   );
 }
