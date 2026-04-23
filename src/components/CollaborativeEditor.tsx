@@ -15,6 +15,7 @@ import { Editor } from '@monaco-editor/react';
 import { useTheme } from './ThemeProvider';
 import { useEffect, useRef, useCallback } from 'react';
 import type { editor } from 'monaco-editor';
+import { SparkIcon } from './SparkIcon';
 
 // ── Types ─────────────────────────────────────────────────────────────
 
@@ -36,6 +37,14 @@ interface CollaborativeEditorProps {
   remoteCursors: RemoteCursor[];
   /** Called on local cursor movement (debounced internally) */
   onCursorMove?: (cursor: { lineNumber: number; column: number }) => void;
+  /** AI fix: suggested code to show in diff mode */
+  suggestedCode?: string;
+  /** AI fix: whether to show diff overlay */
+  showDiff?: boolean;
+  /** AI fix: called when user accepts the diff */
+  onApplyDiff?: () => void;
+  /** AI fix: called when user rejects the diff */
+  onRejectDiff?: () => void;
 }
 
 // ── Language map (mirrors your existing Editor.tsx) ───────────────────
@@ -60,6 +69,10 @@ export default function CollaborativeEditor({
   language,
   remoteCursors,
   onCursorMove,
+  suggestedCode,
+  showDiff,
+  onApplyDiff,
+  onRejectDiff,
 }: CollaborativeEditorProps) {
   const { theme } = useTheme();
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
@@ -67,6 +80,8 @@ export default function CollaborativeEditor({
 
   // Track decoration IDs for remote cursors so we can update them
   const cursorDecorationIds = useRef<string[]>([]);
+  // Track decoration IDs for diff highlights
+  const diffDecorationIds = useRef<string[]>([]);
 
   // Flag: when true, the next onChange is from a remote update → skip emit
   const isRemoteUpdate = useRef(false);
@@ -84,21 +99,21 @@ export default function CollaborativeEditor({
     if (!ed || !monaco) return;
 
     const decorations: editor.IModelDeltaDecoration[] = [];
+    const validCursors = remoteCursors.filter(
+      (r) => r.cursor && r.socketId && r.username && r.color
+    );
 
-    for (const remote of remoteCursors) {
-      // Skip if cursor data is missing or incomplete
-      if (!remote.cursor || !remote.socketId || !remote.username) continue;
+    for (const remote of validCursors) {
+      const { lineNumber, column } = remote.cursor!;
+      const safeId = remote.socketId.replace(/[^a-zA-Z0-9]/g, '');
 
-      const { lineNumber, column } = remote.cursor;
-
-      // Cursor line decoration — a thin coloured bar
+      // Cursor line decoration — a thin coloured bar (unique class per user)
       decorations.push({
         range: new monaco.Range(lineNumber, column, lineNumber, column + 1),
         options: {
-          className: `remote-cursor-${remote.socketId.replace(/[^a-zA-Z0-9]/g, '')}`,
-          beforeContentClassName: `remote-cursor-bar`,
+          className: `remote-cursor-${safeId}`,
+          beforeContentClassName: `remote-cursor-bar-${safeId}`,
           stickiness: monaco.editor.TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges,
-          // We inject per-cursor CSS via a style tag below
         },
       });
 
@@ -108,7 +123,7 @@ export default function CollaborativeEditor({
         options: {
           after: {
             content: ` ${remote.username}`,
-            inlineClassName: `remote-cursor-label`,
+            inlineClassName: `remote-cursor-label-${safeId}`,
           },
           stickiness: monaco.editor.TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges,
         },
@@ -120,7 +135,7 @@ export default function CollaborativeEditor({
       decorations,
     );
 
-    // Inject dynamic CSS for each user's colour
+    // Inject dynamic CSS — one block PER user with unique class names
     let styleEl = document.getElementById('remote-cursor-styles');
     if (!styleEl) {
       styleEl = document.createElement('style');
@@ -128,15 +143,15 @@ export default function CollaborativeEditor({
       document.head.appendChild(styleEl);
     }
 
-    const css = remoteCursors
-      .filter((r) => r.cursor && r.socketId && r.username && r.color)
-      .map(
-        (r) => `
-        .remote-cursor-bar {
+    const css = validCursors
+      .map((r) => {
+        const safeId = r.socketId.replace(/[^a-zA-Z0-9]/g, '');
+        return `
+        .remote-cursor-bar-${safeId} {
           border-left: 2px solid ${r.color} !important;
           margin-left: -1px;
         }
-        .remote-cursor-label {
+        .remote-cursor-label-${safeId} {
           background: ${r.color};
           color: #fff;
           font-size: 10px;
@@ -150,8 +165,8 @@ export default function CollaborativeEditor({
           top: -2px;
           opacity: 0.9;
         }
-      `,
-      )
+      `;
+      })
       .join('\n');
 
     styleEl.textContent = css;
@@ -203,19 +218,95 @@ export default function CollaborativeEditor({
     onChange(newValue);
   };
 
-  // Expose the remote-update flag setter via a data attribute on the container
-  // so the parent can set it before updating value
-  // (This is a pragmatic approach for the MVP — avoids complex state machines)
+  // ── Diff decorations (purple highlighted lines) ────────────────────
+  const applyDiffDecorations = useCallback(() => {
+    if (!editorRef.current || !monacoRef.current || !showDiff || !suggestedCode || !value) {
+      if (editorRef.current && diffDecorationIds.current.length > 0) {
+        diffDecorationIds.current = editorRef.current.deltaDecorations(diffDecorationIds.current, []);
+      }
+      return;
+    }
+
+    const originalLines = value.split('\n');
+    const suggestedLines = suggestedCode.split('\n');
+    const decorations: editor.IModelDeltaDecoration[] = [];
+
+    for (let i = 0; i < suggestedLines.length; i++) {
+      if (originalLines[i] !== suggestedLines[i]) {
+        decorations.push({
+          range: new monacoRef.current!.Range(i + 1, 1, i + 1, 1),
+          options: {
+            isWholeLine: true,
+            className: 'diff-added-line',
+            overviewRuler: {
+              color: '#8141e6',
+              position: monacoRef.current!.editor.OverviewRulerLane.Left
+            },
+          },
+        });
+        decorations.push({
+          range: new monacoRef.current!.Range(i + 1, 1, i + 1, suggestedLines[i].length + 1),
+          options: {
+            inlineClassName: 'diff-inline-added',
+            stickiness: monacoRef.current!.editor.TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges,
+          },
+        });
+      }
+    }
+
+    diffDecorationIds.current = editorRef.current.deltaDecorations(diffDecorationIds.current, decorations);
+  }, [showDiff, suggestedCode, value]);
+
+  useEffect(() => { applyDiffDecorations(); }, [applyDiffDecorations]);
+  useEffect(() => {
+    return () => {
+      if (editorRef.current && diffDecorationIds.current.length > 0) {
+        diffDecorationIds.current = editorRef.current.deltaDecorations(diffDecorationIds.current, []);
+      }
+    };
+  }, [showDiff]);
+
+
+  // Determine displayed value: show suggested code during diff, otherwise current code
+  const displayValue = showDiff && suggestedCode ? suggestedCode : value;
 
   return (
     <div
       className="h-full overflow-hidden relative collaborative-editor"
       data-editor-id="collab"
     >
+      {/* AI diff accept/reject — same style as main page */}
+      {showDiff && suggestedCode && (
+        <div className="absolute top-3 right-3 z-30 flex gap-2">
+          <button
+            onClick={onApplyDiff}
+            className="flex items-center gap-1.5 px-2 py-1 text-xs rounded-md font-medium transition-colors shadow-sm"
+            style={{ 
+              backgroundColor: '#ffffff', 
+              color: '#8141e6', 
+              border: '1px solid #e5e7eb',
+              fontFamily: 'var(--font-poppins), Poppins, sans-serif'
+            }}
+            title="Apply changes"
+          >
+            <SparkIcon size={12} color="#8141e6" />
+            Apply
+          </button>
+          <button
+            onClick={onRejectDiff}
+            className="flex items-center justify-center p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors"
+            title="Reject changes"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ color: theme === 'dark' ? '#ffffff' : '#000000' }}>
+              <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
+        </div>
+      )}
       <Editor
         height="100%"
         language={getMonacoLanguage(language)}
-        value={value}
+        value={displayValue}
         onChange={handleChange}
         onMount={handleEditorDidMount}
         theme={theme === 'dark' ? 'vs-dark' : 'vs-light'}
@@ -235,6 +326,7 @@ export default function CollaborativeEditor({
           renderLineHighlight: 'none',
           hideCursorInOverviewRuler: true,
           overviewRulerBorder: false,
+          readOnly: showDiff, // Lock editor during diff review
           scrollbar: {
             vertical: 'hidden',
             horizontal: 'hidden',

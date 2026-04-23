@@ -242,15 +242,15 @@ input, textarea {
   animation: bounceIn 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
 }
 /* Monaco Editor Diff Highlighting */
-/* Added lines (green) */
+/* Added lines (purple instead of green) */
 .monaco-editor .diff-added-line {
-  background-color: rgba(34, 197, 94, 0.15) !important;
-  border-left: 3px solid #22c55e !important;
+  background-color: rgba(129, 65, 230, 0.15) !important;
+  border-left: 3px solid #8141e6 !important;
 }
 
 .monaco-editor.vs-dark .diff-added-line {
-  background-color: rgba(34, 197, 94, 0.2) !important;
-  border-left: 3px solid #22c55e !important;
+  background-color: rgba(129, 65, 230, 0.2) !important;
+  border-left: 3px solid #8141e6 !important;
 }
 
 /* Removed lines (red) */
@@ -275,14 +275,112 @@ input, textarea {
   border-left: 3px solid #f59e0b !important;
 }
 
-/* Inline highlighting for added content */
+/* Inline highlighting for added content (purple) */
 .monaco-editor .diff-inline-added {
-  background-color: rgba(34, 197, 94, 0.1) !important;
+  background-color: rgba(129, 65, 230, 0.1) !important;
   border-radius: 2px;
 }
 
 .monaco-editor.vs-dark .diff-inline-added {
-  background-color: rgba(34, 197, 94, 0.15) !important;
+  background-color: rgba(129, 65, 230, 0.15) !important;
+}
+
+/* Override Monaco Editor's default green diff colors */
+.monaco-editor .line-insert {
+  background-color: rgba(129, 65, 230, 0.15) !important;
+}
+
+.monaco-editor.vs-dark .line-insert {
+  background-color: rgba(129, 65, 230, 0.2) !important;
+}
+
+.monaco-editor .char-insert {
+  background-color: rgba(129, 65, 230, 0.25) !important;
+}
+
+.monaco-editor.vs-dark .char-insert {
+  background-color: rgba(129, 65, 230, 0.3) !important;
+}
+
+/* Override overview ruler colors */
+.monaco-editor .overview-ruler-decoration-insert {
+  background-color: #8141e6 !important;
+}
+
+/* Override minimap colors */
+.monaco-editor .minimap-decoration-insert {
+  background-color: #8141e6 !important;
+}
+
+/* Override any remaining green diff indicators */
+.monaco-editor .diffInserted {
+  background-color: rgba(129, 65, 230, 0.15) !important;
+  border-color: #8141e6 !important;
+}
+
+.monaco-editor.vs-dark .diffInserted {
+  background-color: rgba(129, 65, 230, 0.2) !important;
+  border-color: #8141e6 !important;
+}
+
+/* Override diff navigator colors */
+.monaco-editor .diff-review-insert {
+  background-color: rgba(129, 65, 230, 0.15) !important;
+  border-left: 3px solid #8141e6 !important;
+}
+
+.monaco-editor.vs-dark .diff-review-insert {
+  background-color: rgba(129, 65, 230, 0.2) !important;
+  border-left: 3px solid #8141e6 !important;
+}
+
+/* Comprehensive override for all green colors in Monaco Editor */
+.monaco-editor * {
+  --vscode-diffEditor-insertedTextBackground: rgba(129, 65, 230, 0.15) !important;
+  --vscode-diffEditor-insertedLineBackground: rgba(129, 65, 230, 0.15) !important;
+  --vscode-diffEditor-insertedTextBorder: #8141e6 !important;
+  --vscode-editorOverviewRuler-addedForeground: #8141e6 !important;
+  --vscode-minimapGutter-addedBackground: #8141e6 !important;
+  --vscode-editorGutter-addedBackground: #8141e6 !important;
+}
+
+.monaco-editor.vs-dark * {
+  --vscode-diffEditor-insertedTextBackground: rgba(129, 65, 230, 0.2) !important;
+  --vscode-diffEditor-insertedLineBackground: rgba(129, 65, 230, 0.2) !important;
+  --vscode-diffEditor-insertedTextBorder: #8141e6 !important;
+  --vscode-editorOverviewRuler-addedForeground: #8141e6 !important;
+  --vscode-minimapGutter-addedBackground: #8141e6 !important;
+  --vscode-editorGutter-addedBackground: #8141e6 !important;
+}
+
+/* Force override all possible green diff elements */
+.monaco-editor .decorationsOverviewRuler .decoration-added,
+.monaco-editor .decorationsOverviewRuler .decoration-insert,
+.monaco-editor .overview-ruler .decoration-added,
+.monaco-editor .overview-ruler .decoration-insert,
+.monaco-editor .minimap .decoration-added,
+.monaco-editor .minimap .decoration-insert {
+  background-color: #8141e6 !important;
+  border-color: #8141e6 !important;
+}
+
+/* Target specific Monaco Editor CSS classes for green diff indicators */
+.monaco-editor .cdr.added,
+.monaco-editor .cdr.inserted,
+.monaco-editor .line-numbers.added,
+.monaco-editor .line-numbers.inserted,
+.monaco-editor .margin-view-overlays .added,
+.monaco-editor .margin-view-overlays .inserted {
+  background-color: #8141e6 !important;
+  border-color: #8141e6 !important;
+}
+
+/* Override any CSS custom properties that might be setting green colors */
+.monaco-editor {
+  --monaco-diff-added-color: #8141e6 !important;
+  --monaco-diff-inserted-color: #8141e6 !important;
+  --monaco-overview-ruler-added: #8141e6 !important;
+  --monaco-overview-ruler-inserted: #8141e6 !important;
 }
 
 /* Hide scrollbar utility */
@@ -865,9 +963,9 @@ html {
   background-color: #ffffff !important;
 }
 
-/* Dark mode styling for Connect button */
+/* Dark mode styling for Connect button - keep white background */
 .dark .connect-button-override {
-  background-color: #000000 !important;
+  background-color: #ffffff !important;
 }
 
 /* Purple text cursor for main page only (not collaborative editor) */

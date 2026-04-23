@@ -17,6 +17,7 @@ export interface RemoteUser {
   username: string;
   color: string;
   cursor?: { lineNumber: number; column: number } | null;
+  activeFileId?: string;
 }
 
 export interface ChatMessage {
@@ -50,11 +51,13 @@ export interface RoomState {
 interface UseSocketOptions {
   roomId: string;
   onRoomState?: (state: RoomState) => void;
+  onRoomNotFound?: (data: { roomId: string }) => void;
   onCodeUpdate?: (code: string, senderId: string, fileId?: string) => void;
   onLanguageUpdate?: (language: string, senderId: string) => void;
-  onCursorUpdate?: (data: { socketId: string; cursor: { lineNumber: number; column: number } | null; username: string; color: string }) => void;
+  onCursorUpdate?: (data: { socketId: string; cursor: { lineNumber: number; column: number } | null; username: string; color: string; activeFileId?: string }) => void;
   onUserJoined?: (user: RemoteUser) => void;
   onUserLeft?: (data: { socketId: string; username: string }) => void;
+  onUserFileFocus?: (data: { socketId: string; fileId: string }) => void;
   onChatUpdate?: (message: ChatMessage) => void;
   onChatReaction?: (data: { messageId: string; emoji: string; username: string; socketId: string }) => void;
   onChatDelete?: (data: { messageId: string }) => void;
@@ -75,12 +78,11 @@ export function useSocket(opts: UseSocketOptions) {
   useEffect(() => { callbacksRef.current = opts; });
 
   useEffect(() => {
-    // Connect to the custom server (defaults to localhost:3000 in dev)
     const serverUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3000';
     const socket = io(serverUrl, { 
       transports: ['websocket', 'polling'], 
       reconnectionAttempts: 10, 
-      reconnectionDelay: 1000 
+      reconnectionDelay: 1000,
     });
     socketRef.current = socket;
 
@@ -89,6 +91,7 @@ export function useSocket(opts: UseSocketOptions) {
 
     // Room
     socket.on('room-state', (state: RoomState) => callbacksRef.current.onRoomState?.(state));
+    socket.on('room-not-found', (data: { roomId: string }) => callbacksRef.current.onRoomNotFound?.(data));
     socket.on('code-update', ({ code, senderId, fileId }: any) => callbacksRef.current.onCodeUpdate?.(code, senderId, fileId));
     socket.on('language-update', ({ language, senderId }: any) => callbacksRef.current.onLanguageUpdate?.(language, senderId));
     socket.on('cursor-update', (data: any) => callbacksRef.current.onCursorUpdate?.(data));
@@ -106,6 +109,7 @@ export function useSocket(opts: UseSocketOptions) {
     socket.on('file-switched', (data: any) => callbacksRef.current.onFileSwitched?.(data));
     socket.on('file-renamed', (data: any) => callbacksRef.current.onFileRenamed?.(data));
     socket.on('file-closed', (data: any) => callbacksRef.current.onFileClosed?.(data));
+    socket.on('user-file-focus', (data: any) => callbacksRef.current.onUserFileFocus?.(data));
 
     return () => { socket.disconnect(); socketRef.current = null; setIsConnected(false); };
   }, [roomId]);
@@ -158,6 +162,7 @@ export function useSocket(opts: UseSocketOptions) {
 
   return {
     isConnected,
+    socketRef,
     socketId: socketRef.current?.id ?? null,
     emitCodeChange, emitLanguageChange, emitCursorMove,
     emitChatMessage, emitChatReaction, emitChatDelete, emitChatTyping,

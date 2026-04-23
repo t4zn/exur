@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { use } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -15,6 +15,7 @@ import LanguageSelector from '../../../components/LanguageSelector';
 import InfoOverlay from '../../../components/info-overlay';
 import { useSocket, RemoteUser, ChatMessage, RoomState, FileTab } from '../../../hooks/useSocket';
 import { useJudge0 } from '../../../hooks/useJudge0';
+import { useAICodeFix } from '../../../hooks/useAICodeFix';
 
 const STORAGE_PREFIX = 'exur-collab-';
 function saveToLocal(roomId: string, code: string) { try { localStorage.setItem(`${STORAGE_PREFIX}${roomId}`, code); } catch {} }
@@ -107,27 +108,22 @@ export default function CollaborativeEditorPage({ params }: { params: Promise<{ 
   const [isEditingFilename, setIsEditingFilename] = useState(false);
   const [editingName, setEditingName] = useState('');
   const [isCodeCopied, setIsCodeCopied] = useState(false);
-  const isRemoteUpdateRef = useRef(false);
+  const [showInviteSlider, setShowInviteSlider] = useState(false);
+  const [roomNotFound, setRoomNotFound] = useState(false);
+  // Track whether we're suppressing the initial room-state code echo
+  const suppressNextEmitRef = useRef(false);
 
   const { executeCode, isLoading } = useJudge0();
+  const { isLoading: isFixingCode, suggestedCode, showDiff, fixCode, applyFix, rejectFix } = useAICodeFix();
 
   const activeFile = files.find(f => f.id === activeFileId) || files[0];
   const code = activeFile?.code || '';
 
-  // Reset remote update flag after render
-  useEffect(() => {
-    if (isRemoteUpdateRef.current) {
-      // Use a small timeout to ensure the editor has processed the change
-      const timer = setTimeout(() => {
-        isRemoteUpdateRef.current = false;
-      }, 0);
-      return () => clearTimeout(timer);
-    }
-  }, [code]);
-
   // Socket callbacks
   const handleRoomState = useCallback((state: RoomState) => {
-    isRemoteUpdateRef.current = true;
+    // Mark that the next code-change from the editor is just the room-state
+    // being applied — we don't want to re-emit it to the server.
+    suppressNextEmitRef.current = true;
     if (state.files?.length) {
       setFiles(state.files);
       setActiveFileId(state.activeFileId || state.files[0].id);
@@ -144,19 +140,23 @@ export default function CollaborativeEditorPage({ params }: { params: Promise<{ 
   }, []);
 
   const handleCodeUpdate = useCallback((newCode: string, _sid: string, fileId?: string) => {
-    const targetFileId = fileId || activeFileId;
+    if (!fileId) return; // Must have a fileId to know which tab to update
     setFiles(prev => prev.map(f => {
-      if (f.id === targetFileId) {
-        isRemoteUpdateRef.current = true;
+      if (f.id === fileId) {
         return { ...f, code: newCode };
       }
       return f;
     }));
-  }, [activeFileId]);
+  }, []);
 
   const handleLanguageUpdate = useCallback((l: string) => setLanguage(l), []);
   const handleCursorUpdate = useCallback((d: any) => {
-    setRemoteUsers(prev => { const n = new Map(prev); n.set(d.socketId, { ...d }); return n; });
+    setRemoteUsers(prev => {
+      const n = new Map(prev);
+      const existing = n.get(d.socketId);
+      n.set(d.socketId, { ...existing, ...d });
+      return n;
+    });
   }, []);
   const handleUserJoined = useCallback((u: RemoteUser) => {
     setRemoteUsers(prev => { const n = new Map(prev); n.set(u.socketId, u); return n; });
@@ -177,22 +177,35 @@ export default function CollaborativeEditorPage({ params }: { params: Promise<{ 
 
   // File tab callbacks from server
   const handleFileCreated = useCallback((d: any) => {
-    // Only add the file if it doesn't already exist (avoid duplicates from own actions)
+    // Add the file for remote users, but DON'T switch their active tab
     setFiles(p => {
       if (p.find(f => f.id === d.file.id)) {
         return p; // File already exists, don't add it again
       }
       return [...p, d.file];
     });
-    setActiveFileId(d.file.id);
+    // Don't setActiveFileId — each user navigates tabs independently
   }, []);
-  const handleFileSwitched = useCallback((d: any) => setActiveFileId(d.fileId), []);
   const handleFileRenamed = useCallback((d: any) => {
     setFiles(p => p.map(f => f.id === d.fileId ? { ...f, filename: d.filename } : f));
   }, []);
   const handleFileClosed = useCallback((d: any) => {
     setFiles(p => p.filter(f => f.id !== d.fileId));
     setActiveFileId(prev => prev === d.fileId ? d.newActiveFileId : prev);
+  }, []);
+  const handleRoomNotFound = useCallback(() => {
+    setRoomNotFound(true);
+  }, []);
+  // File presence: track which file a remote user is focused on
+  const handleUserFileFocus = useCallback((d: { socketId: string; fileId: string }) => {
+    setRemoteUsers(prev => {
+      const n = new Map(prev);
+      const user = n.get(d.socketId);
+      if (user) {
+        n.set(d.socketId, { ...user, activeFileId: d.fileId });
+      }
+      return n;
+    });
   }, []);
 
   const {
@@ -206,19 +219,27 @@ export default function CollaborativeEditorPage({ params }: { params: Promise<{ 
     onUserJoined: handleUserJoined, onUserLeft: handleUserLeft,
     onChatUpdate: handleChatUpdate, onChatReaction: handleChatReaction,
     onChatDelete: handleChatDelete, onChatTyping: handleChatTyping,
-    onFileCreated: handleFileCreated, onFileSwitched: handleFileSwitched,
+    onFileCreated: handleFileCreated,
     onFileRenamed: handleFileRenamed, onFileClosed: handleFileClosed,
+    onRoomNotFound: handleRoomNotFound,
+    onUserFileFocus: handleUserFileFocus,
   });
 
-  // Local code change
+  // Local code change — always update state, only suppress the first
+  // server emit after room-state is received (to avoid echoing it back).
   const handleCodeChange = useCallback((v: string | undefined) => {
     const val = v ?? '';
-    // Skip if this is a remote update
-    if (isRemoteUpdateRef.current) {
-      return;
-    }
+
+    // Always update the files state so the editor stays in sync
     setFiles(p => p.map(f => f.id === activeFileId ? { ...f, code: val } : f));
     saveToLocal(roomId, val);
+
+    // Suppress the emit only for the initial room-state application
+    if (suppressNextEmitRef.current) {
+      suppressNextEmitRef.current = false;
+      return;
+    }
+
     emitCodeChange(val, activeFileId);
   }, [roomId, emitCodeChange, activeFileId]);
 
@@ -243,6 +264,7 @@ export default function CollaborativeEditorPage({ params }: { params: Promise<{ 
   };
 
   const switchFile = (fileId: string) => {
+    // Local tab switch + broadcast presence to others
     setActiveFileId(fileId);
     emitFileSwitch(fileId);
   };
@@ -258,27 +280,77 @@ export default function CollaborativeEditorPage({ params }: { params: Promise<{ 
     emitFileClose(fileId);
   };
 
+  // ── File extension helpers (matching main page logic) ───────────
+  const getFileExtension = (lang: string): string => {
+    const extensionMap: Record<string, string> = {
+      assembly: 'asm', bash: 'sh', basic: 'bas', c: 'c', cpp: 'cpp',
+      csharp: 'cs', clojure: 'clj', cobol: 'cob', d: 'd', elixir: 'ex',
+      erlang: 'erl', fortran: 'f90', go: 'go', haskell: 'hs', java: 'java',
+      javascript: 'js', kotlin: 'kt', lisp: 'lisp', lua: 'lua',
+      objective_c: 'm', ocaml: 'ml', octave: 'm', pascal: 'pas', perl: 'pl',
+      php: 'php', prolog: 'pl', python: 'py', r: 'r', ruby: 'rb',
+      rust: 'rs', scala: 'scala', sql: 'sql', swift: 'swift',
+      typescript: 'ts', visual_basic: 'vb', sanskrit: 'ved',
+    };
+    return extensionMap[lang] || 'txt';
+  };
+
+  const getFilenameWithoutExtension = (fullFilename: string): string => {
+    const lastDotIndex = fullFilename.lastIndexOf('.');
+    return lastDotIndex === -1 ? fullFilename : fullFilename.substring(0, lastDotIndex);
+  };
+
   const startRenaming = (file: FileTab) => {
+    // Only edit the name part, not the extension (matching main page)
+    const nameWithoutExt = getFilenameWithoutExtension(file.filename);
+    setEditingName(nameWithoutExt);
     setIsEditingFilename(true);
-    setEditingName(file.filename);
   };
 
   const finishRenaming = (fileId: string) => {
     if (editingName.trim()) {
-      setFiles(p => p.map(f => f.id === fileId ? { ...f, filename: editingName.trim() } : f));
-      emitFileRename(fileId, editingName.trim());
+      const file = files.find(f => f.id === fileId);
+      const ext = file ? getFileExtension(file.language) : 'txt';
+      // Only allow alphanumeric, hyphens, underscores
+      const sanitized = editingName.trim().replace(/[^a-zA-Z0-9\-_\s]/g, '');
+      const newFilename = `${sanitized}.${ext}`;
+      setFiles(p => p.map(f => f.id === fileId ? { ...f, filename: newFilename } : f));
+      emitFileRename(fileId, newFilename);
     }
     setIsEditingFilename(false);
+    setEditingName('');
   };
 
-  // Run code
+  // Run code — use latest code from state directly
   const handleRunCode = async () => {
+    // Get the latest code from the current active file
+    const currentFile = files.find(f => f.id === activeFileId) || files[0];
+    const currentCode = currentFile?.code || '';
+    const currentLang = currentFile?.language || language;
+    
     setOutput(''); setError(''); setExecutionStats({ time: null, memory: null });
-    const result = await executeCode(code, activeFile?.language || language, stdin);
+    const result = await executeCode(currentCode, currentLang, stdin);
     setOutput(result.output); setError(result.error);
     setExecutionStats({ time: result.executionTime, memory: result.memoryUsed });
   };
   const handleClear = () => { setOutput(''); setError(''); setExecutionStats({ time: null, memory: null }); };
+
+  // AI fix handlers
+  const handleAIFix = async () => {
+    if (error && code) {
+      await fixCode(code, error, activeFile?.language || language);
+    }
+  };
+  const handleApplyFix = () => {
+    applyFix((fixedCode: string) => {
+      handleCodeChange(fixedCode); // This syncs to other users via socket
+    });
+  };
+  const handleRejectFix = () => {
+    rejectFix((originalCode: string) => {
+      handleCodeChange(originalCode);
+    });
+  };
 
   const handleCopyLink = async () => {
     try { await navigator.clipboard.writeText(window.location.href); } catch {
@@ -319,81 +391,120 @@ export default function CollaborativeEditorPage({ params }: { params: Promise<{ 
 
   const remoteCursorsArray = Array.from(remoteUsers.values());
 
-  // Tab bar component
+  // Helper: get remote users focused on a specific file
+  const getUsersOnFile = (fileId: string) => {
+    return remoteCursorsArray.filter(u => u.activeFileId === fileId);
+  };
+
+  // Tab bar component with Canva-style presence
   const renderTabs = () => (
-    <div className="flex items-center overflow-x-auto scrollbar-hide">
-      {files.map((file) => (
-        <div
-          key={file.id}
-          className={`flex items-center gap-2 px-3 py-2 cursor-pointer group min-w-0 rounded-t-md transition-all duration-200 ${file.id === activeFileId ? 'shadow-sm' : 'hover:bg-gray-50 dark:hover:bg-gray-800'}`}
-          style={{
-            backgroundColor: file.id === activeFileId && theme === 'dark' ? '#1e1e1e' : 'transparent',
-            boxShadow: file.id === activeFileId ? '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)' : 'none'
-          }}
-          onClick={() => switchFile(file.id)}
-        >
-          {/* File Icon */}
-          <div className="flex-shrink-0">
-            <i className={`devicon-${file.language}-plain`} style={{ fontSize: '14px', color: file.id === activeFileId ? '#8141e6' : 'currentColor' }}></i>
-          </div>
+    <div className="flex items-center overflow-x-auto scrollbar-hide gap-1">
+      {files.map((file) => {
+        const usersOnFile = getUsersOnFile(file.id);
+        const isActive = file.id === activeFileId;
+        const hasPresence = usersOnFile.length > 0;
 
-          {/* Filename */}
-          {isEditingFilename && file.id === activeFileId ? (
-            <input
-              type="text" 
-              value={editingName} 
-              autoFocus
-              onChange={(e) => setEditingName(e.target.value)}
-              onBlur={() => finishRenaming(file.id)}
-              onKeyDown={(e) => { 
-                if (e.key === 'Enter') finishRenaming(file.id); 
-                if (e.key === 'Escape') setIsEditingFilename(false); 
+        return (
+          <div
+            key={file.id}
+            className={`relative flex items-center gap-2 px-3 py-2 cursor-pointer group min-w-0 rounded-t-md transition-all duration-300 ${isActive ? 'shadow-sm' : 'hover:bg-gray-50 dark:hover:bg-gray-800'}`}
+            style={{
+              backgroundColor: isActive && theme === 'dark' ? '#1e1e1e' : isActive ? '#f9fafb' : 'transparent',
+              boxShadow: isActive ? '0 1px 3px 0 rgba(0, 0, 0, 0.1)' : 'none',
+            }}
+            onClick={() => switchFile(file.id)}
+          >
+            {/* Colored presence bar at bottom */}
+            <div
+              className="absolute bottom-0 left-0 right-0 transition-all duration-300"
+              style={{
+                height: (isActive || hasPresence) ? '2px' : '0px',
+                background: hasPresence
+                  ? usersOnFile.length === 1
+                    ? usersOnFile[0].color
+                    : `linear-gradient(to right, ${usersOnFile.map((u, i) => {
+                        const pct1 = (i / usersOnFile.length) * 100;
+                        const pct2 = ((i + 1) / usersOnFile.length) * 100;
+                        return `${u.color} ${pct1}%, ${u.color} ${pct2}%`;
+                      }).join(', ')})`
+                  : isActive ? '#8141e6' : 'transparent',
+                borderRadius: '1px 1px 0 0',
               }}
-              className="bg-transparent text-xs font-medium outline-none min-w-0"
-              style={{ color: 'var(--foreground)' }}
-              onClick={(e) => e.stopPropagation()}
-              onFocus={(e) => e.target.select()}
             />
-          ) : (
-            <span 
-              className="text-xs font-medium truncate min-w-0" 
-              style={{ color: 'var(--foreground)' }}
-              onDoubleClick={() => file.id === activeFileId && startRenaming(file)}
-            >
-              {file.filename}
-            </span>
-          )}
+            {/* Presence avatars — stacked on top-right like Canva */}
+            {/* Profile pictures removed from tab header */}
 
-          {/* Edit Button - Only show for active file on hover */}
-          {file.id === activeFileId && (
-            <button
-              onClick={(e) => { e.stopPropagation(); startRenaming(file); }}
-              className="flex-shrink-0 opacity-0 group-hover:opacity-60 hover:opacity-100 transition-opacity p-1"
-              style={{ color: 'var(--foreground)' }}
-              title="Edit filename"
-            >
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="m13.5 3.5-11 11V19h4.5l11-11a1.5 1.5 0 0 0 0-2.12l-2.38-2.38a1.5 1.5 0 0 0-2.12 0Z" />
-                <path d="m13.5 6.5 3 3" />
-              </svg>
-            </button>
-          )}
+            {/* File Icon */}
+            <div className="flex-shrink-0">
+              <i className={`devicon-${file.language}-plain`} style={{ fontSize: '14px', color: isActive ? '#8141e6' : 'currentColor' }}></i>
+            </div>
 
-          {/* Close Button */}
-          {files.length > 1 && (
-            <button
-              onClick={(e) => { e.stopPropagation(); closeFile(file.id); }}
-              className={`flex-shrink-0 transition-opacity p-1 ${file.id === activeFileId ? 'opacity-60 hover:opacity-100' : 'opacity-0 group-hover:opacity-60 hover:opacity-100'}`}
-              style={{ color: 'var(--foreground)' }}
-            >
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <line x1="18" y1="6" x2="6" y2="18" />
-                <line x1="6" y1="6" x2="18" y2="18" />
-              </svg>
-            </button>
-          )}
-        </div>
-      ))}
+            {/* Filename */}
+            {isEditingFilename && isActive ? (
+              <div className="flex items-center min-w-0">
+                <input
+                  type="text" 
+                  value={editingName} 
+                  autoFocus
+                  onChange={(e) => {
+                    const sanitized = e.target.value.replace(/[^a-zA-Z0-9\-_\s]/g, '');
+                    setEditingName(sanitized);
+                  }}
+                  onBlur={() => finishRenaming(file.id)}
+                  onKeyDown={(e) => { 
+                    if (e.key === 'Enter') finishRenaming(file.id); 
+                    if (e.key === 'Escape') { setIsEditingFilename(false); setEditingName(''); }
+                  }}
+                  className="bg-transparent text-xs font-medium outline-none min-w-0"
+                  style={{ color: 'var(--foreground)', maxWidth: '80px' }}
+                  onClick={(e) => e.stopPropagation()}
+                  onFocus={(e) => e.target.select()}
+                />
+                <span className="text-xs font-medium opacity-40" style={{ color: 'var(--foreground)' }}>
+                  .{getFileExtension(file.language)}
+                </span>
+              </div>
+            ) : (
+              <span 
+                className="text-xs font-medium truncate min-w-0" 
+                style={{ color: 'var(--foreground)' }}
+                onDoubleClick={() => isActive && startRenaming(file)}
+              >
+                {file.filename}
+              </span>
+            )}
+
+            {/* Edit Button - Only show for active file on hover */}
+            {isActive && (
+              <button
+                onClick={(e) => { e.stopPropagation(); startRenaming(file); }}
+                className="flex-shrink-0 opacity-0 group-hover:opacity-60 hover:opacity-100 transition-opacity p-1"
+                style={{ color: 'var(--foreground)' }}
+                title="Edit filename"
+              >
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="m13.5 3.5-11 11V19h4.5l11-11a1.5 1.5 0 0 0 0-2.12l-2.38-2.38a1.5 1.5 0 0 0-2.12 0Z" />
+                  <path d="m13.5 6.5 3 3" />
+                </svg>
+              </button>
+            )}
+
+            {/* Close Button */}
+            {files.length > 1 && (
+              <button
+                onClick={(e) => { e.stopPropagation(); closeFile(file.id); }}
+                className={`flex-shrink-0 transition-opacity p-1 ${isActive ? 'opacity-60 hover:opacity-100' : 'opacity-0 group-hover:opacity-60 hover:opacity-100'}`}
+                style={{ color: 'var(--foreground)' }}
+              >
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 
@@ -409,8 +520,8 @@ export default function CollaborativeEditorPage({ params }: { params: Promise<{ 
             {onlineCount}
           </div>
           <div className="hidden md:flex items-center -space-x-1">
-            {myInfo && <div key={myInfo.socketId} className="w-5 h-5 rounded-full flex items-center justify-center text-[8px] font-bold text-white" style={{ backgroundColor: myInfo.color }} title={`${myInfo.username} (you)`}>{myInfo.username.charAt(0)}</div>}
-            {remoteCursorsArray.slice(0, 3).map(u => <div key={u.socketId} className="w-5 h-5 rounded-full flex items-center justify-center text-[8px] font-bold text-white" style={{ backgroundColor: u.color }} title={u.username}>{u.username.charAt(0)}</div>)}
+            {myInfo && <div key="my-avatar" className="w-5 h-5 rounded-full flex items-center justify-center text-[8px] font-bold text-white" style={{ backgroundColor: myInfo.color }} title={`${myInfo.username} (you)`}>{myInfo.username.charAt(0)}</div>}
+            {remoteCursorsArray.slice(0, 3).map((u, idx) => <div key={u.socketId || `remote-${idx}`} className="w-5 h-5 rounded-full flex items-center justify-center text-[8px] font-bold text-white" style={{ backgroundColor: u.color }} title={u.username}>{u.username?.charAt(0) || '?'}</div>)}
             {remoteCursorsArray.length > 3 && <div key="more-users" className="w-5 h-5 rounded-full flex items-center justify-center text-[8px] font-bold" style={{ backgroundColor: theme === 'dark' ? '#333' : '#e5e7eb', color: 'var(--foreground)' }}>+{remoteCursorsArray.length - 3}</div>}
           </div>
         </div>
@@ -462,24 +573,76 @@ export default function CollaborativeEditorPage({ params }: { params: Promise<{ 
       </div>
       {/* File tabs */}
       {renderTabs()}
-      {/* Editor */}
-      <div className="flex-1 min-h-0 overflow-hidden rounded-lg" style={{ boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}>
-        <CollaborativeEditor value={code} onChange={handleCodeChange} language={activeFile?.language || language} remoteCursors={remoteCursorsArray.map(u => ({ ...u, cursor: u.cursor ?? null }))} onCursorMove={emitCursorMove} />
-      </div>
+      {/* Editor — colored border shows who's editing this file */}
+      {(() => {
+        const editorsOnThisFile = getUsersOnFile(activeFileId);
+        const hasEditors = editorsOnThisFile.length > 0;
+        // Show current user's own color as the border
+        const borderColor = myInfo?.color || (hasEditors ? editorsOnThisFile[0].color : null);
+        return (
+          <div
+            className="flex-1 min-h-0 overflow-hidden rounded-lg relative transition-all duration-300"
+            style={{
+              boxShadow: borderColor ? `0 0 0 2px ${borderColor}` : 'none',
+            }}
+          >
+            {/* Editor name tags — floating at top-right */}
+            {hasEditors && (
+              <div className="absolute top-0 right-0 z-20 flex items-center gap-1 p-1">
+                {editorsOnThisFile.slice(0, 3).map((u, idx) => (
+                  <div
+                    key={u.socketId || `editor-user-${idx}`}
+                    className="flex items-center gap-1 px-2 py-0.5 rounded-bl-md rounded-tr-md text-[9px] font-semibold text-white"
+                    style={{ backgroundColor: u.color }}
+                  >
+                    <span>{u.username}</span>
+                  </div>
+                ))}
+                {editorsOnThisFile.length > 3 && (
+                  <div className="px-2 py-0.5 rounded-bl-md text-[9px] font-semibold text-white" style={{ backgroundColor: '#666' }}>
+                    +{editorsOnThisFile.length - 3} more
+                  </div>
+                )}
+              </div>
+            )}
+            <CollaborativeEditor value={code} onChange={handleCodeChange} language={activeFile?.language || language} remoteCursors={remoteCursorsArray.map(u => ({ ...u, cursor: u.cursor ?? null }))} onCursorMove={emitCursorMove} suggestedCode={suggestedCode || undefined} showDiff={showDiff} onApplyDiff={handleApplyFix} onRejectDiff={handleRejectFix} />
+          </div>
+        );
+      })()}
     </div>
   );
 
   const renderOutputPanel = () => (
     <div className="h-full flex flex-col" style={{ backgroundColor: 'var(--background)' }}>
       <div className="flex-1 min-h-0">
-        <Output output={output} error={error} isLoading={isLoading} executionTime={executionStats.time} memoryUsed={executionStats.memory} stdin={stdin} onStdinChange={setStdin} code={code} onClear={handleClear} />
+        <Output output={output} error={error} isLoading={isLoading} executionTime={executionStats.time} memoryUsed={executionStats.memory} onAIFix={handleAIFix} isFixingCode={isFixingCode} stdin={stdin} onStdinChange={setStdin} code={code} onClear={handleClear} />
       </div>
     </div>
   );
 
   const chatProps = { messages: chatMessages, onSend: emitChatMessage, onReaction: emitChatReaction, onDelete: emitChatDelete, onTyping: emitChatTyping, currentUsername: myInfo?.username ?? '', currentSocketId: myInfo?.socketId, typingUsers, reactions: chatReactions, deletedMessages: deletedMsgIds };
 
-  return (
+    // Room not found — show error screen
+    if (roomNotFound) {
+      return (
+        <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--background)', color: 'var(--foreground)' }}>
+          <div className="text-center space-y-4">
+            <div style={{ color: '#ef4444', fontSize: '48px' }}>⚠</div>
+            <h1 className="text-2xl font-bold" style={{ fontFamily: 'var(--font-poppins), sans-serif' }}>Room Not Found</h1>
+            <p className="text-sm opacity-60">The room code <span className="font-mono font-bold tracking-widest">{roomId.toUpperCase()}</span> does not exist.</p>
+            <button
+              onClick={() => router.push('/')}
+              className="px-6 py-3 rounded-lg font-medium text-sm transition-all hover:opacity-80"
+              style={{ backgroundColor: '#8141e6', color: '#fff' }}
+            >
+              Go Home
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    return (
     <div className="min-h-screen collaborative-page" style={{ backgroundColor: 'var(--background)', color: 'var(--foreground)' }}>
       {/* Header */}
       <header className="px-3 sm:px-4 lg:px-8 py-2 sm:py-3 lg:py-4" style={{ backgroundColor: 'var(--background)' }}>
@@ -488,21 +651,80 @@ export default function CollaborativeEditorPage({ params }: { params: Promise<{ 
             <Image src="/logo.svg" alt="Exur" width={120} height={40} className="h-6 sm:h-7 lg:h-9 xl:h-10 w-auto" />
           </div>
           <div className="flex items-center gap-1 sm:gap-2 lg:gap-4 xl:gap-6">
-            <div className="flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer hover:opacity-80 transition-opacity" 
-                 style={{ backgroundColor: theme === 'dark' ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)' }}
-                 onClick={handleCopyLink}
-                 title="Click to copy room link">
-              <div className="flex items-center gap-1">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: '#8141e6' }}>
-                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                  <circle cx="12" cy="7" r="4"></circle>
+            {/* Invite / Share button — opens minimal slider */}
+            <div className="relative">
+              <button
+                onClick={() => setShowInviteSlider(prev => !prev)}
+                className="flex items-center gap-2 px-3 py-2 rounded-lg transition-all hover:opacity-80"
+                style={{ 
+                  backgroundColor: theme === 'dark' ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
+                  color: '#8141e6'
+                }}
+                title="Invite collaborators"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="18" cy="5" r="3" />
+                  <circle cx="6" cy="12" r="3" />
+                  <circle cx="18" cy="19" r="3" />
+                  <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+                  <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
                 </svg>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" style={{ color: '#8141e6' }}>
-                  <line x1="12" y1="5" x2="12" y2="19"></line>
-                  <line x1="5" y1="12" x2="19" y2="12"></line>
-                </svg>
-              </div>
-              <span className="text-lg font-semibold" style={{ color: '#8141e6', fontFamily: 'var(--font-poppins), sans-serif' }}>{roomId}</span>
+                <span className="text-sm font-semibold tracking-widest" style={{ fontFamily: 'var(--font-poppins), sans-serif' }}>{roomId.toUpperCase()}</span>
+              </button>
+
+              {/* Minimal invite slider */}
+              {showInviteSlider && (
+                <div 
+                  className="absolute right-0 top-full mt-2 z-50 rounded-xl shadow-xl overflow-hidden"
+                  style={{ 
+                    backgroundColor: 'var(--background)',
+                    border: `1px solid ${theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
+                    width: '260px'
+                  }}
+                >
+                  <div className="p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-medium" style={{ color: 'var(--foreground)', opacity: 0.6 }}>Room Code</span>
+                      <button onClick={() => setShowInviteSlider(false)} className="p-1 hover:opacity-70 transition-opacity" style={{ color: 'var(--foreground)' }}>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <line x1="18" y1="6" x2="6" y2="18" />
+                          <line x1="6" y1="6" x2="18" y2="18" />
+                        </svg>
+                      </button>
+                    </div>
+                    <div 
+                      className="text-center py-3 rounded-lg tracking-[0.3em] text-xl font-bold"
+                      style={{ 
+                        backgroundColor: theme === 'dark' ? 'rgba(129,65,230,0.1)' : 'rgba(129,65,230,0.06)',
+                        color: '#8141e6'
+                      }}
+                    >
+                      {roomId.toUpperCase()}
+                    </div>
+                    <button
+                      onClick={() => {
+                        handleCopyLink();
+                        setTimeout(() => setShowInviteSlider(false), 1500);
+                      }}
+                      className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-all hover:opacity-80"
+                      style={{ 
+                        backgroundColor: '#8141e6',
+                        color: '#fff'
+                      }}
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                      </svg>
+                      {isLinkCopied ? 'Copied!' : 'Copy Invite Link'}
+                    </button>
+                    <div className="flex items-center gap-2 text-[10px]" style={{ color: 'var(--foreground)', opacity: 0.4 }}>
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /></svg>
+                      {onlineCount} online now
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
             <LanguageSelector language={language} onChange={handleLanguageChange} />
             <button onClick={toggleTheme} className="p-2 sm:p-2.5 lg:p-3 transition-all duration-200 min-w-[40px] min-h-[40px] flex items-center justify-center hover:opacity-70" style={{ color: 'var(--foreground)' }} aria-label="Toggle theme">

@@ -117,20 +117,22 @@ export default function Output({
                     {error}
                   </div>
                   {onAIFix && (
-                    <span
+                    <button
                       onClick={onAIFix}
-                      className="group inline-flex items-center gap-1.5 cursor-pointer hover:opacity-70 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity duration-200 text-[10px] sm:text-xs font-semibold tracking-wide"
+                      className="group inline-flex items-center gap-1.5 px-2 py-1 rounded-md hover:opacity-80 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 text-[10px] sm:text-xs font-medium"
                       style={{
-                        color: 'var(--foreground)',
-                        fontFamily: 'SF Pro Display, -apple-system, BlinkMacSystemFont, system-ui, sans-serif'
+                        backgroundColor: '#8141e6',
+                        color: '#ffffff',
+                        border: 'none',
+                        fontFamily: 'var(--font-poppins), Poppins, sans-serif'
                       }}
                       title="Fix code with AI"
                     >
                       <div className="group-hover:rotate-12 transition-transform duration-200">
-                        <SparkIcon size={12} />
+                        <SparkIcon size={12} color="white" />
                       </div>
                       {isFixingCode ? 'Fixing...' : 'AI Fix'}
-                    </span>
+                    </button>
                   )}
                 </div>
               ) : output ? (

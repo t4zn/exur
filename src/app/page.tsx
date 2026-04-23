@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { v4 as uuidv4 } from 'uuid';
+import { io, Socket } from 'socket.io-client';
 import CodeEditor from '../components/Editor';
 import Output from '../components/Output';
 import OutputVertical from '../components/OutputVertical';
@@ -687,13 +687,100 @@ export default function Home() {
     URL.revokeObjectURL(url);
   };
 
+  // Socket reference for room operations (create & check)
+  const homeSocketRef = useRef<Socket | null>(null);
+  const [isSocketReady, setIsSocketReady] = useState(false);
+  const [isCreatingRoom, setIsCreatingRoom] = useState(false);
+
+  useEffect(() => {
+    const serverUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3000';
+    const socket = io(serverUrl, { transports: ['websocket', 'polling'], reconnectionAttempts: 5, reconnectionDelay: 1000 });
+    homeSocketRef.current = socket;
+    socket.on('connect', () => setIsSocketReady(true));
+    socket.on('disconnect', () => setIsSocketReady(false));
+    return () => { socket.disconnect(); homeSocketRef.current = null; setIsSocketReady(false); };
+  }, []);
+
+  const handleCreateRoom = () => {
+    const socket = homeSocketRef.current;
+    if (!socket) return;
+
+    setIsCreatingRoom(true);
+
+    // If socket not connected yet, wait for it
+    const doCreate = () => {
+      // Set a timeout in case acknowledgement never comes
+      const timeout = setTimeout(() => {
+        setIsCreatingRoom(false);
+      }, 5000);
+
+      socket.emit('create-room', (response: { success: boolean; roomId: string }) => {
+        clearTimeout(timeout);
+        if (response?.success) {
+          window.location.href = `/editor/${response.roomId}`;
+        } else {
+          setIsCreatingRoom(false);
+        }
+      });
+    };
+
+    if (socket.connected) {
+      doCreate();
+    } else {
+      // Wait for connection then create
+      socket.once('connect', () => doCreate());
+      // Timeout if connection takes too long
+      setTimeout(() => {
+        if (!socket.connected) {
+          setIsCreatingRoom(false);
+        }
+      }, 4000);
+    }
+  };
+
   const handleJoinRoom = () => {
-    const roomId = joinRoomId.trim();
+    const roomId = joinRoomId.trim().toLowerCase();
     if (!roomId) return;
 
-    // Navigate directly to the room - server will create it if it doesn't exist
-    // This is the standard approach for collaborative editors
-    window.location.href = `/editor/${roomId}`;
+    setIsJoining(true);
+    setJoinError('');
+
+    const socket = homeSocketRef.current;
+    if (!socket) {
+      setJoinError('Not connected. Please refresh.');
+      setIsJoining(false);
+      return;
+    }
+
+    const doCheck = () => {
+      // Timeout in case ack never arrives
+      const timeout = setTimeout(() => {
+        setIsJoining(false);
+        setJoinError('Server not responding. Please try again.');
+      }, 5000);
+
+      socket.emit('check-room', { roomId }, (response: { exists: boolean; roomId: string }) => {
+        clearTimeout(timeout);
+        setIsJoining(false);
+        if (response?.exists) {
+          window.location.href = `/editor/${response.roomId}`;
+        } else {
+          setJoinError('Room not found');
+        }
+      });
+    };
+
+    if (socket.connected) {
+      doCheck();
+    } else {
+      socket.once('connect', () => doCheck());
+      setTimeout(() => {
+        if (!socket.connected) {
+          setIsJoining(false);
+          setJoinError('Cannot connect to server. Please refresh.');
+        }
+      }, 4000);
+    }
   };
 
   return (
@@ -719,7 +806,7 @@ export default function Home() {
                 display: 'flex',
                 alignItems: 'center',
                 gap: '8px',
-                padding: '10px 20px',
+                padding: '8px 20px',
                 color: '#8141e6',
                 border: '2px solid #8141e6',
                 borderRadius: '50px',
@@ -820,18 +907,16 @@ export default function Home() {
               <div className="space-y-3">
                 {/* Create Room */}
                 <button
-                  onClick={() => {
-                    const roomId = uuidv4().slice(0, 8);
-                    window.location.href = `/editor/${roomId}`;
-                  }}
-                  className="w-full p-3 rounded-lg text-left hover:opacity-80 transition-opacity"
+                  onClick={handleCreateRoom}
+                  disabled={isCreatingRoom}
+                  className="w-full p-3 rounded-lg text-left hover:opacity-80 transition-opacity disabled:opacity-60"
                   style={{
                     backgroundColor: '#8141e6',
                     color: '#ffffff'
                   }}
                 >
-                  <div className="font-medium text-sm">Create New Room</div>
-                  <div className="text-xs opacity-80">Start a new collaborative session</div>
+                  <div className="font-medium text-sm">{isCreatingRoom ? 'Creating...' : 'Create New Room'}</div>
+                  <div className="text-xs opacity-80">{isCreatingRoom ? 'Setting up your room' : 'Start a new collaborative session'}</div>
                 </button>
 
                 {/* OR Divider */}
@@ -846,27 +931,36 @@ export default function Home() {
                   <input
                     type="text"
                     value={joinRoomId}
-                    onChange={(e) => setJoinRoomId(e.target.value.toUpperCase())}
+                    onChange={(e) => {
+                      setJoinRoomId(e.target.value.toUpperCase());
+                      setJoinError('');
+                    }}
+                    onKeyDown={(e) => { if (e.key === 'Enter') handleJoinRoom(); }}
                     placeholder="Enter room code..."
-                    className="w-full px-3 py-2 text-sm rounded-lg outline-none"
+                    className="w-full px-3 py-2 text-sm rounded-lg outline-none tracking-widest font-semibold text-center"
                     style={{
                       backgroundColor: theme === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
                       color: 'var(--foreground)',
-                      border: `1px solid ${theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`
+                      border: `1px solid ${joinError ? '#ef4444' : (theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)')}`
                     }}
-                    maxLength={8}
+                    maxLength={4}
                   />
+                  {joinError && (
+                    <div className="text-xs font-medium text-center" style={{ color: '#ef4444' }}>
+                      {joinError}
+                    </div>
+                  )}
                   
                   <button
                     onClick={handleJoinRoom}
-                    disabled={!joinRoomId.trim()}
+                    disabled={!joinRoomId.trim() || isJoining}
                     className="w-full p-3 rounded-xl text-sm font-medium transition-all disabled:opacity-50 create-room-border"
                     style={{
                       backgroundColor: theme === 'dark' ? '#000000' : '#ffffff',
                       color: '#8141e6'
                     }}
                   >
-                    Join Room
+                    {isJoining ? 'Checking...' : 'Join Room'}
                   </button>
                 </div>
               </div>

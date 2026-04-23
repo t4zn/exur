@@ -29,49 +29,69 @@ const CURSOR_COLORS = [
 const rooms = new Map();
 
 /**
- * Get or create a room by its ID.
- * Each room tracks: code, language, connected users, and chat history.
+ * Generate a 4-character lowercase alphabetic room code.
  */
-function getRoom(roomId) {
-  if (!rooms.has(roomId)) {
-    rooms.set(roomId, {
-      code: 'print("Hello, World!")\nprint("Welcome to Exur!")',
-      language: 'python',
-      users: new Map(),
-      chat: [],
-      // Multi-tab file system
-      files: [
-        {
-          id: '1',
-          filename: 'main.py',
-          language: 'python',
-          code: 'print("Hello, World!")\nprint("Welcome to Exur!")',
-        },
-      ],
-      activeFileId: '1',
-    });
-  }
-  return rooms.get(roomId);
+function generateRoomCode() {
+  const chars = 'abcdefghijklmnopqrstuvwxyz';
+  let code;
+  do {
+    code = '';
+    for (let i = 0; i < 4; i++) {
+      code += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+  } while (rooms.has(code)); // Ensure uniqueness
+  return code;
 }
 
 /**
- * Pick a random adjective+noun username, e.g. "SwiftFox42".
+ * Create a new room with the given ID.
+ */
+function createRoom(roomId) {
+  const room = {
+    code: 'print("Hello, World!")\nprint("Welcome to Exur!")',
+    language: 'python',
+    users: new Map(),
+    chat: [],
+    files: [
+      {
+        id: '1',
+        filename: 'main.py',
+        language: 'python',
+        code: 'print("Hello, World!")\nprint("Welcome to Exur!")',
+      },
+    ],
+    activeFileId: '1',
+  };
+  rooms.set(roomId, room);
+  return room;
+}
+
+/**
+ * Get an existing room by its ID. Returns null if not found.
+ */
+function getRoom(roomId) {
+  return rooms.get(roomId) || null;
+}
+
+/**
+ * Pick a random single-word techy username.
  */
 function generateUsername() {
-  const adjectives = [
-    'Swift', 'Clever', 'Bold', 'Bright', 'Cosmic',
-    'Lunar', 'Neon', 'Pixel', 'Quantum', 'Zen',
-    'Turbo', 'Cyber', 'Nova', 'Stellar', 'Atomic',
+  const names = [
+    'Void', 'Flux', 'Byte', 'Pixel', 'Node',
+    'Zinc', 'Apex', 'Onyx', 'Echo', 'Sage',
+    'Neon', 'Volt', 'Drift', 'Pulse', 'Ember',
+    'Helix', 'Prism', 'Blaze', 'Crypt', 'Glitch',
+    'Orbit', 'Synth', 'Qubit', 'Warp', 'Haze',
+    'Iris', 'Kern', 'Lumen', 'Mist', 'Nexus',
+    'Oxide', 'Rune', 'Spark', 'Trace', 'Unix',
+    'Vex', 'Wren', 'Xenon', 'Zeta', 'Arc',
+    'Cipher', 'Delta', 'Ether', 'Fuse', 'Grid',
+    'Hex', 'Ion', 'Jolt', 'Kite', 'Loop',
+    'Macro', 'Null', 'Optic', 'Port', 'Quartz',
+    'Relay', 'Shard', 'Turbo', 'Ultra', 'Vector',
   ];
-  const nouns = [
-    'Fox', 'Wolf', 'Eagle', 'Panda', 'Tiger',
-    'Falcon', 'Lynx', 'Otter', 'Phoenix', 'Dragon',
-    'Hawk', 'Bear', 'Cobra', 'Raven', 'Shark',
-  ];
-  const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
-  const noun = nouns[Math.floor(Math.random() * nouns.length)];
-  const num = Math.floor(Math.random() * 100);
-  return `${adj}${noun}${num}`;
+  return names[Math.floor(Math.random() * names.length)];
 }
 
 // ── Boot ──────────────────────────────────────────────────────────────
@@ -102,18 +122,51 @@ app.prepare().then(() => {
   io.on('connection', (socket) => {
     console.log(`[socket] connected: ${socket.id}`);
 
+    // ─── create-room ──────────────────────────────────────────────
+    // Client requests a new room. Server generates a 4-char code,
+    // creates the room, and sends back the room ID.
+    socket.on('create-room', (callback) => {
+      const roomId = generateRoomCode();
+      createRoom(roomId);
+      console.log(`[room ${roomId}] created`);
+      if (typeof callback === 'function') {
+        callback({ success: true, roomId });
+      }
+    });
+
+    // ─── check-room ──────────────────────────────────────────────
+    // Client checks if a room exists before joining.
+    socket.on('check-room', ({ roomId }, callback) => {
+      const normalizedId = roomId.toLowerCase();
+      const exists = rooms.has(normalizedId);
+      if (typeof callback === 'function') {
+        callback({ exists, roomId: normalizedId });
+      }
+    });
+
     // ─── join-room ────────────────────────────────────────────────
     // Client sends { roomId } when the editor page mounts.
     // Server replies with the current room state and broadcasts the
-    // new user to everyone else in the room.
-    socket.on('join-room', ({ roomId }) => {
-      const room = getRoom(roomId);
-      const username = generateUsername();
+    // new user to everyone else in the room. Room must already exist.
+    socket.on('join-room', ({ roomId, username: clientUsername }) => {
+      const normalizedId = roomId.toLowerCase();
+      const room = getRoom(normalizedId);
+
+      if (!room) {
+        socket.emit('room-not-found', { roomId: normalizedId });
+        return;
+      }
+
+      // Use client-provided username if valid, otherwise generate one
+      const username = (clientUsername && clientUsername.trim().length > 0)
+        ? clientUsername.trim().substring(0, 20) // max 20 chars
+        : generateUsername();
       const color = CURSOR_COLORS[Math.floor(Math.random() * CURSOR_COLORS.length)];
 
-      room.users.set(socket.id, { username, color, cursor: null });
-      socket.join(roomId);
-      socket.data.roomId = roomId;
+      const defaultFileId = room.files.length > 0 ? room.files[0].id : '1';
+      room.users.set(socket.id, { username, color, cursor: null, activeFileId: defaultFileId });
+      socket.join(normalizedId);
+      socket.data.roomId = normalizedId;
 
       // Send full room state including files
       socket.emit('room-state', {
@@ -126,17 +179,18 @@ app.prepare().then(() => {
         you: { socketId: socket.id, username, color },
       });
 
-      socket.to(roomId).emit('user-joined', {
+      socket.to(normalizedId).emit('user-joined', {
         socketId: socket.id,
         username,
         color,
+        activeFileId: defaultFileId,
       });
 
-      console.log(`[room ${roomId}] ${username} joined (${room.users.size} users)`);
+      console.log(`[room ${normalizedId}] ${username} joined (${room.users.size} users)`);
     });
 
     // ─── code-change ──────────────────────────────────────────────
-    // Update code for a specific file tab.
+    // Update code for a specific file tab only.
     socket.on('code-change', ({ roomId, code, fileId }) => {
       const room = rooms.get(roomId);
       if (!room) return;
@@ -145,8 +199,10 @@ app.prepare().then(() => {
       if (fileId) {
         const file = room.files.find(f => f.id === fileId);
         if (file) file.code = code;
+        // Track which file this user is editing
+        const user = room.users.get(socket.id);
+        if (user) user.activeFileId = fileId;
       }
-      room.code = code; // also keep top-level for backward compat
 
       socket.to(roomId).emit('code-update', {
         code,
@@ -169,21 +225,29 @@ app.prepare().then(() => {
 
     // ─── File tab operations ─────────────────────────────────────
 
-    // Create a new file tab
+    // Create a new file tab — broadcast to OTHERS so they see the tab,
+    // but don't force them to switch to it.
     socket.on('file-create', ({ roomId, file }) => {
       const room = rooms.get(roomId);
       if (!room) return;
       room.files.push(file);
-      room.activeFileId = file.id;
-      io.to(roomId).emit('file-created', { file, senderId: socket.id });
+      // Broadcast to others only (sender already added it locally)
+      socket.to(roomId).emit('file-created', { file, senderId: socket.id });
     });
 
-    // Switch active file
+    // Switch active file — tracks file presence for other users.
+    // Each user navigates tabs independently, but we broadcast
+    // which file they're viewing so others can see presence.
     socket.on('file-switch', ({ roomId, fileId }) => {
       const room = rooms.get(roomId);
       if (!room) return;
-      room.activeFileId = fileId;
-      socket.to(roomId).emit('file-switched', { fileId, senderId: socket.id });
+      const user = room.users.get(socket.id);
+      if (user) user.activeFileId = fileId;
+      // Broadcast presence change to others
+      socket.to(roomId).emit('user-file-focus', {
+        socketId: socket.id,
+        fileId,
+      });
     });
 
     // Rename a file tab
@@ -222,6 +286,7 @@ app.prepare().then(() => {
         cursor,
         username: user?.username,
         color: user?.color,
+        activeFileId: user?.activeFileId,
       });
     });
 

@@ -221,11 +221,11 @@ export default function CodeEditor({
             isWholeLine: true,
             className: 'diff-added-line',
             overviewRuler: {
-              color: '#22c55e',
+              color: '#8141e6',
               position: monacoRef.current.editor.OverviewRulerLane.Left
             },
             minimap: {
-              color: '#22c55e',
+              color: '#8141e6',
               position: monacoRef.current.editor.MinimapPosition.Inline
             }
           }
@@ -293,13 +293,14 @@ export default function CodeEditor({
             onClick={onApplyDiff}
             className="flex items-center gap-1.5 px-2 py-1 text-xs rounded-md font-medium transition-colors shadow-sm"
             style={{ 
-              backgroundColor: theme === 'dark' ? '#000000' : '#ffffff', 
-              color: theme === 'dark' ? '#ffffff' : '#000000', 
-              border: theme === 'dark' ? '1px solid #374151' : '1px solid #e5e7eb' 
+              backgroundColor: '#ffffff', 
+              color: '#8141e6', 
+              border: '1px solid #e5e7eb',
+              fontFamily: 'var(--font-poppins), Poppins, sans-serif'
             }}
             title="Apply changes"
           >
-            <SparkIcon size={12} />
+            <SparkIcon size={12} color="#8141e6" />
             Apply
           </button>
           <button
