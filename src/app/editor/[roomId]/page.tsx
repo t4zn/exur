@@ -96,6 +96,8 @@ export default function CollaborativeEditorPage({ params }: { params: Promise<{ 
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [myInfo, setMyInfo] = useState<{ socketId: string; username: string; color: string } | null>(null);
   const [isChatCollapsed, setIsChatCollapsed] = useState(true);
+  const [mobileTab, setMobileTab] = useState<'editor' | 'output' | 'chat'>('editor');
+  const [unreadChat, setUnreadChat] = useState(0);
   const [isLinkCopied, setIsLinkCopied] = useState(false);
   const [onlineCount, setOnlineCount] = useState(0);
   const [stdin, setStdin] = useState('');
@@ -166,7 +168,11 @@ export default function CollaborativeEditorPage({ params }: { params: Promise<{ 
     setRemoteUsers(prev => { const n = new Map(prev); n.delete(d.socketId); return n; });
     setOnlineCount(c => Math.max(1, c - 1));
   }, []);
-  const handleChatUpdate = useCallback((m: ChatMessage) => setChatMessages(p => [...p, m]), []);
+  const handleChatUpdate = useCallback((m: ChatMessage) => {
+    setChatMessages(p => [...p, m]);
+    // Increment unread badge on mobile when not viewing chat
+    setUnreadChat(prev => prev + 1);
+  }, []);
   const handleChatReaction = useCallback((d: any) => {
     setChatReactions(p => { const n = { ...p }; if (n[d.messageId]?.emoji === d.emoji) delete n[d.messageId]; else n[d.messageId] = { emoji: d.emoji, username: d.username }; return n; });
   }, []);
@@ -531,9 +537,9 @@ export default function CollaborativeEditorPage({ params }: { params: Promise<{ 
   // Editor panel
   const renderEditorPanel = (padding: string, iconSize: number) => (
     <div className={`h-full flex flex-col ${padding}`} style={{ backgroundColor: 'var(--background)' }}>
-      <div className="flex items-center justify-between mb-2 lg:mb-3">
-        <div className="flex items-center gap-2">
-          <h2 className="text-lg font-medium" style={{ color: 'var(--foreground)' }}>Editor</h2>
+      <div className="flex items-center justify-between mb-1 sm:mb-2 lg:mb-3">
+        <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+          <h2 className="text-sm sm:text-lg font-medium flex-shrink-0" style={{ color: 'var(--foreground)' }}>Editor</h2>
           <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: isConnected ? '#22c55e' : '#ef4444', boxShadow: isConnected ? '0 0 6px rgba(34,197,94,0.5)' : '0 0 6px rgba(239,68,68,0.5)' }} />
           <div className="flex items-center gap-1 text-[10px] font-medium" style={{ color: 'var(--foreground)', opacity: 0.5 }}>
             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /></svg>
@@ -545,14 +551,14 @@ export default function CollaborativeEditorPage({ params }: { params: Promise<{ 
             {remoteCursorsArray.length > 3 && <div key="more-users" className="w-5 h-5 rounded-full flex items-center justify-center text-[8px] font-bold" style={{ backgroundColor: theme === 'dark' ? '#333' : '#e5e7eb', color: 'var(--foreground)' }}>+{remoteCursorsArray.length - 3}</div>}
           </div>
         </div>
-        <div className="flex items-center gap-1">
-          <button onClick={createNewFile} className="p-2 transition-all duration-200 min-w-[36px] min-h-[36px] flex items-center justify-center hover:opacity-70" style={{ color: '#8141e6' }} aria-label="New file" title="New file">
+        <div className="flex items-center gap-0 sm:gap-1 flex-shrink-0">
+          <button onClick={createNewFile} className="p-1.5 sm:p-2 transition-all duration-200 min-w-[28px] min-h-[28px] sm:min-w-[36px] sm:min-h-[36px] flex items-center justify-center hover:opacity-70" style={{ color: '#8141e6' }} aria-label="New file" title="New file">
             <svg width={iconSize} height={iconSize} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <line x1="12" y1="5" x2="12" y2="19" />
               <line x1="5" y1="12" x2="19" y2="12" />
             </svg>
           </button>
-          <button onClick={handleCopyLink} className="p-2 transition-all duration-200 min-w-[36px] min-h-[36px] flex items-center justify-center hover:opacity-70" style={{ color: isLinkCopied ? '#22c55e' : '#8141e6' }} aria-label="Copy invite link">
+          <button onClick={handleCopyLink} className="p-1.5 sm:p-2 transition-all duration-200 min-w-[28px] min-h-[28px] sm:min-w-[36px] sm:min-h-[36px] flex items-center justify-center hover:opacity-70" style={{ color: isLinkCopied ? '#22c55e' : '#8141e6' }} aria-label="Copy invite link">
             {isLinkCopied ? (
               <svg width={iconSize} height={iconSize} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ color: '#22c55e' }}>
                 <polyline points="20,6 9,17 4,12" />
@@ -578,27 +584,27 @@ export default function CollaborativeEditorPage({ params }: { params: Promise<{ 
               )}
             </div>
           </button>
-          <button onClick={handleDownloadCode} className="p-2 transition-all duration-200 min-w-[36px] min-h-[36px] flex items-center justify-center hover:opacity-70" style={{ color: '#8141e6' }} aria-label="Download code">
+          <button onClick={handleDownloadCode} className="hidden sm:flex p-2 transition-all duration-200 min-w-[36px] min-h-[36px] items-center justify-center hover:opacity-70" style={{ color: '#8141e6' }} aria-label="Download code">
             <svg width={iconSize} height={iconSize} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
               <polyline points="7,10 12,15 17,10" />
               <line x1="12" y1="15" x2="12" y2="3" />
             </svg>
           </button>
-          <button onClick={() => emitSaveVersion(activeFileId, 'Manual save')} className="p-2 transition-all duration-200 min-w-[36px] min-h-[36px] flex items-center justify-center hover:opacity-70" style={{ color: '#8141e6' }} aria-label="Save version" title="Save version">
+          <button onClick={() => emitSaveVersion(activeFileId, 'Manual save')} className="p-1.5 sm:p-2 transition-all duration-200 min-w-[28px] min-h-[28px] sm:min-w-[36px] sm:min-h-[36px] flex items-center justify-center hover:opacity-70" style={{ color: '#8141e6' }} aria-label="Save version" title="Save version">
             <svg width={iconSize} height={iconSize} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
               <polyline points="17,21 17,13 7,13 7,21" />
               <polyline points="7,3 7,8 15,8" />
             </svg>
           </button>
-          <button onClick={() => { setShowVersionPanel(!showVersionPanel); if (!showVersionPanel) { emitGetVersions(activeFileId, (versions) => setVersionHistory(versions)); } }} className="p-2 transition-all duration-200 min-w-[36px] min-h-[36px] flex items-center justify-center hover:opacity-70" style={{ color: '#8141e6' }} aria-label="Version history" title="Version history">
+          <button onClick={() => { setShowVersionPanel(!showVersionPanel); if (!showVersionPanel) { emitGetVersions(activeFileId, (versions) => setVersionHistory(versions)); } }} className="p-1.5 sm:p-2 transition-all duration-200 min-w-[28px] min-h-[28px] sm:min-w-[36px] sm:min-h-[36px] flex items-center justify-center hover:opacity-70" style={{ color: '#8141e6' }} aria-label="Version history" title="Version history">
             <svg width={iconSize} height={iconSize} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <circle cx="12" cy="12" r="10" />
               <polyline points="12,6 12,12 16,14" />
             </svg>
           </button>
-          <button onClick={handleRunCode} disabled={isLoading} className="p-2 transition-all duration-200 disabled:opacity-50 min-w-[36px] min-h-[36px] flex items-center justify-center hover:opacity-70" style={{ color: '#8141e6' }} aria-label="Run">
+          <button onClick={handleRunCode} disabled={isLoading} className="p-1.5 sm:p-2 transition-all duration-200 disabled:opacity-50 min-w-[28px] min-h-[28px] sm:min-w-[36px] sm:min-h-[36px] flex items-center justify-center hover:opacity-70" style={{ color: '#8141e6' }} aria-label="Run">
             {isLoading ? <span className="inline-flex"><span className="w-1 h-1 bg-current rounded-full animate-pulse" /><span className="w-1 h-1 bg-current rounded-full animate-pulse mx-0.5" style={{ animationDelay: '200ms' }} /><span className="w-1 h-1 bg-current rounded-full animate-pulse" style={{ animationDelay: '400ms' }} /></span>
             : <svg width={iconSize} height={iconSize} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="transition-transform hover:scale-110"><polygon points="5,3 19,12 5,21" /></svg>}
           </button>
@@ -688,21 +694,22 @@ export default function CollaborativeEditorPage({ params }: { params: Promise<{ 
             <div className="relative">
               <button
                 onClick={() => setShowInviteSlider(prev => !prev)}
-                className="flex items-center gap-2 px-3 py-2 rounded-lg transition-all hover:opacity-80"
+                className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg transition-all hover:opacity-80"
                 style={{ 
                   backgroundColor: theme === 'dark' ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
                   color: '#8141e6'
                 }}
                 title="Invite collaborators"
               >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg width="14" height="14" className="sm:w-4 sm:h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <circle cx="18" cy="5" r="3" />
                   <circle cx="6" cy="12" r="3" />
                   <circle cx="18" cy="19" r="3" />
                   <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
                   <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
                 </svg>
-                <span className="text-sm font-semibold tracking-widest" style={{ fontFamily: 'var(--font-poppins), sans-serif' }}>{roomId.toUpperCase()}</span>
+                <span className="hidden sm:inline text-sm font-semibold tracking-widest" style={{ fontFamily: 'var(--font-poppins), sans-serif' }}>{roomId.toUpperCase()}</span>
+                <span className="sm:hidden text-[10px] font-bold tracking-wider" style={{ fontFamily: 'var(--font-poppins), sans-serif' }}>{roomId.toUpperCase()}</span>
               </button>
 
               {/* Minimal invite slider */}
@@ -760,9 +767,9 @@ export default function CollaborativeEditorPage({ params }: { params: Promise<{ 
               )}
             </div>
             <LanguageSelector language={language} onChange={handleLanguageChange} />
-            <button onClick={toggleTheme} className="p-2 sm:p-2.5 lg:p-3 transition-all duration-200 min-w-[40px] min-h-[40px] flex items-center justify-center hover:opacity-70" style={{ color: 'var(--foreground)' }} aria-label="Toggle theme">
-              {theme === 'light' ? <svg width="16" height="16" className="sm:w-4 sm:h-4 lg:w-5 lg:h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" /></svg>
-              : <svg width="16" height="16" className="sm:w-4 sm:h-4 lg:w-5 lg:h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="5" /><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" /></svg>}
+            <button onClick={toggleTheme} className="p-1.5 sm:p-2.5 lg:p-3 transition-all duration-200 min-w-[32px] min-h-[32px] sm:min-w-[40px] sm:min-h-[40px] flex items-center justify-center hover:opacity-70" style={{ color: 'var(--foreground)' }} aria-label="Toggle theme">
+              {theme === 'light' ? <svg width="14" height="14" className="sm:w-4 sm:h-4 lg:w-5 lg:h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" /></svg>
+              : <svg width="14" height="14" className="sm:w-4 sm:h-4 lg:w-5 lg:h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="5" /><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" /></svg>}
             </button>
           </div>
         </div>
@@ -786,27 +793,45 @@ export default function CollaborativeEditorPage({ params }: { params: Promise<{ 
             }
           />
         </div>
-        {/* Mobile */}
+        {/* Mobile — full-height single-view with bottom tab bar */}
         <div className="h-full lg:hidden flex flex-col">
-          <div className="flex-1 min-h-0">{renderEditorPanel('p-3', 16)}</div>
-          <div className="h-[150px] flex-shrink-0" style={{ borderTop: `1px solid ${theme === 'dark' ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}` }}>
-            <div className="h-full p-3">{renderOutputPanel()}</div>
+          <div className="flex-1 min-h-0 overflow-hidden">
+            {mobileTab === 'editor' && (
+              <div className="h-full">{renderEditorPanel('p-2 pb-0', 14)}</div>
+            )}
+            {mobileTab === 'output' && (
+              <div className="h-full p-2">{renderOutputPanel()}</div>
+            )}
+            {mobileTab === 'chat' && (
+              <div className="h-full">
+                <ChatPanel {...chatProps} isCollapsed={false} onToggleCollapse={() => setMobileTab('editor')} />
+              </div>
+            )}
+          </div>
+
+          {/* Mobile bottom tab bar */}
+          <div className="flex-shrink-0 flex items-center justify-around py-1.5 px-2" style={{ backgroundColor: 'var(--background)', borderTop: `1px solid ${theme === 'dark' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}` }}>
+            {[
+              { id: 'editor' as const, label: 'Editor', icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="16,18 22,12 16,6" /><polyline points="8,6 2,12 8,18" /></svg> },
+              { id: 'output' as const, label: 'Output', icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="4,17 10,11 4,5" /><line x1="12" y1="19" x2="20" y2="19" /></svg> },
+              { id: 'chat' as const, label: 'Chat', icon: <div className="relative"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>{unreadChat > 0 && <span className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 rounded-full text-[7px] font-bold text-white flex items-center justify-center" style={{ backgroundColor: '#ef4444' }}>{unreadChat > 9 ? '9+' : unreadChat}</span>}</div> },
+            ].map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => { setMobileTab(tab.id); if (tab.id === 'chat') setUnreadChat(0); }}
+                className="flex flex-col items-center gap-0.5 px-4 py-1 rounded-lg transition-all"
+                style={{ color: mobileTab === tab.id ? '#8141e6' : theme === 'dark' ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.35)' }}
+              >
+                {tab.icon}
+                <span className="text-[9px] font-semibold">{tab.label}</span>
+              </button>
+            ))}
           </div>
         </div>
       </div>
 
-      {/* Mobile chat overlay */}
-      {!isChatCollapsed && (
-        <div className="lg:hidden fixed inset-0 z-50 flex flex-col">
-          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setIsChatCollapsed(true)} />
-          <div className="relative mt-auto h-[60vh] rounded-t-2xl overflow-hidden" style={{ backgroundColor: 'var(--background)' }}>
-            <ChatPanel {...chatProps} isCollapsed={false} onToggleCollapse={() => setIsChatCollapsed(true)} />
-          </div>
-        </div>
-      )}
-
-      {/* Footer */}
-      <footer className="text-center py-4 text-xs opacity-60" style={{ color: 'var(--foreground)' }}>
+      {/* Footer — hidden on mobile */}
+      <footer className="hidden lg:block text-center py-4 text-xs opacity-60" style={{ color: 'var(--foreground)' }}>
         © 2026 <a href="https://t4z.in" target="_blank" rel="noopener noreferrer" className="font-medium hover:opacity-80 transition-opacity">Taizun</a>. All rights reserved.
       </footer>
 
