@@ -316,6 +316,7 @@ export default function Home() {
   const [joinRoomId, setJoinRoomId] = useState('');
   const [joinError, setJoinError] = useState('');
   const [isJoining, setIsJoining] = useState(false);
+  const [forceCloseLangSelector, setForceCloseLangSelector] = useState(false);
 
   // Get current active file
   const activeFile = files.find(f => f.id === activeFileId) || files[0];
@@ -708,7 +709,11 @@ export default function Home() {
           </div>
           <div className="flex items-center gap-1 sm:gap-2 lg:gap-4 xl:gap-6">
             <div
-              onClick={() => setShowCollabSlide(true)}
+              onClick={() => {
+                setShowCollabSlide(true);
+                setForceCloseLangSelector(true);
+                setTimeout(() => setForceCloseLangSelector(false), 100);
+              }}
               className="connect-button-override"
               style={{
                 display: 'flex',
@@ -741,6 +746,12 @@ export default function Home() {
               onViewLanguage={handleViewLanguage}
               onDeleteLanguage={handleDeleteLanguage}
               refreshTrigger={customLanguagesRefresh}
+              forceClose={forceCloseLangSelector}
+              onToggle={(isOpen) => {
+                if (isOpen) {
+                  setShowCollabSlide(false);
+                }
+              }}
             />
             <button
               onClick={toggleTheme}

@@ -12,6 +12,7 @@ interface LanguageSelectorProps {
   onDeleteLanguage?: (languageId: string) => void;
   refreshTrigger?: number;
   onToggle?: (isOpen: boolean) => void;
+  forceClose?: boolean;
 }
 
 const languages = [
@@ -53,7 +54,7 @@ const languages = [
   { value: 'visual_basic', label: 'Visual Basic', id: 84, icon: 'devicon-visualbasic-plain' }
 ];
 
-export default function LanguageSelector({ language, onChange, onViewLanguage, onDeleteLanguage, refreshTrigger, onToggle }: LanguageSelectorProps) {
+export default function LanguageSelector({ language, onChange, onViewLanguage, onDeleteLanguage, refreshTrigger, onToggle, forceClose }: LanguageSelectorProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [customLanguages, setCustomLanguages] = useState<Record<string, { name: string; extension: string; keywords: Record<string, string> }>>({});
@@ -65,6 +66,14 @@ export default function LanguageSelector({ language, onChange, onViewLanguage, o
   useEffect(() => {
     setCustomLanguages(CustomLanguageService.getLanguages());
   }, [refreshTrigger]);
+
+  // Force close when requested
+  useEffect(() => {
+    if (forceClose && isOpen) {
+      setIsOpen(false);
+      setSearchTerm('');
+    }
+  }, [forceClose, isOpen]);
 
   const filteredLanguages = languages.filter(lang =>
     lang.label.toLowerCase().includes(searchTerm.toLowerCase())
@@ -137,7 +146,11 @@ export default function LanguageSelector({ language, onChange, onViewLanguage, o
   return (
     <div className="relative min-w-[100px] sm:min-w-[120px]" ref={dropdownRef}>
       <button
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => {
+          const newIsOpen = !isOpen;
+          setIsOpen(newIsOpen);
+          onToggle?.(newIsOpen);
+        }}
         className="w-full px-2 sm:px-3 py-2 sm:py-3 font-medium uppercase tracking-wider text-xs sm:text-sm flex items-center gap-1.5 sm:gap-2 transition-all duration-200 hover:opacity-80"
         style={{
           backgroundColor: 'var(--background)',
