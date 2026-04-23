@@ -16,8 +16,38 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Exur - AI Code Compiler",
-  description: "A minimal, modern AI-powered code compiler with intelligent error fixing and code suggestions",
+  title: "Exur - Collaborative Code Editor",
+  description: "Real-time collaborative code editor with AI assistance, live cursors, team chat, and 30+ programming languages. Code together, build faster.",
+  keywords: ["collaborative code editor", "real-time coding", "pair programming", "team coding", "live collaboration", "AI code assistant", "online IDE"],
+  authors: [{ name: "Taizun", url: "https://t4z.in" }],
+  creator: "Taizun",
+  publisher: "Exur",
+  openGraph: {
+    title: "Exur - Collaborative Code Editor",
+    description: "Real-time collaborative code editor with AI assistance, live cursors, team chat, and 30+ programming languages.",
+    url: "https://exur.in",
+    siteName: "Exur",
+    type: "website",
+    images: [
+      {
+        url: "/logo.png",
+        width: 1200,
+        height: 630,
+        alt: "Exur - Collaborative Code Editor",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Exur - Collaborative Code Editor",
+    description: "Real-time collaborative code editor with AI assistance, live cursors, team chat, and 30+ programming languages.",
+    images: ["/logo.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
+  viewport: "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no",
 };
 
 export default function RootLayout({

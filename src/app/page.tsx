@@ -792,7 +792,7 @@ export default function Home() {
             className="flex items-center gap-2 sm:gap-3 cursor-pointer hover:opacity-80 transition-opacity duration-200"
             onClick={() => window.location.reload()}
           >
-            <Image src="/logo.svg" alt="Exur" width={120} height={40} className="h-6 sm:h-7 lg:h-9 xl:h-10 w-auto" />
+            <Image src="/logo.svg" alt="Exur" width={120} height={40} className="h-6 sm:h-7 lg:h-9 xl:h-10" style={{ width: 'auto' }} />
           </div>
           <div className="flex items-center gap-1 sm:gap-2 lg:gap-4 xl:gap-6">
             <div

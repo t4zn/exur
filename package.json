@@ -1,6 +1,18 @@
 {
   "name": "exur",
-  "version": "0.1.0",
+  "version": "2.0.0",
+  "description": "Advanced collaborative code editor with real-time collaboration, AI assistance, and 30+ programming languages",
+  "keywords": ["code-editor", "collaboration", "real-time", "ai", "programming", "compiler", "nextjs", "typescript"],
+  "author": "Taizun <contact@t4z.in>",
+  "license": "MIT",
+  "homepage": "https://exur.in",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/exur.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/exur/issues"
+  },
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -8,7 +20,8 @@
     "build": "next build",
     "start": "NODE_ENV=production node server.js",
     "start:collab": "NODE_ENV=production node server.js",
-    "lint": "eslint"
+    "lint": "eslint",
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",

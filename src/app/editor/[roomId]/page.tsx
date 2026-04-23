@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { use } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -82,6 +82,14 @@ export default function CollaborativeEditorPage({ params }: { params: Promise<{ 
   const { roomId } = use(params);
   const router = useRouter();
   const { theme, toggleTheme } = useTheme();
+
+  // Set dynamic page title
+  useEffect(() => {
+    document.title = `Room ${roomId.toUpperCase()} - Exur Collaborative Editor`;
+    return () => {
+      document.title = "Exur - Collaborative Code Editor";
+    };
+  }, [roomId]);
 
   // State
   const [files, setFiles] = useState<FileTab[]>([{ 
@@ -687,7 +695,7 @@ export default function CollaborativeEditorPage({ params }: { params: Promise<{ 
       <header className="px-3 sm:px-4 lg:px-8 py-2 sm:py-3 lg:py-4" style={{ backgroundColor: 'var(--background)' }}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 sm:gap-3 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => router.push('/')}>
-            <Image src="/logo.svg" alt="Exur" width={120} height={40} className="h-6 sm:h-7 lg:h-9 xl:h-10 w-auto" />
+            <Image src="/logo.svg" alt="Exur" width={120} height={40} className="h-6 sm:h-7 lg:h-9 xl:h-10" style={{ width: 'auto' }} />
           </div>
           <div className="flex items-center gap-1 sm:gap-2 lg:gap-4 xl:gap-6">
             {/* Invite / Share button — opens minimal slider */}
