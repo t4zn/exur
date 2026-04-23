@@ -312,6 +312,10 @@ export default function Home() {
   const [viewingLanguage, setViewingLanguage] = useState<string>('');
   const [customLanguages, setCustomLanguages] = useState<Record<string, CustomLanguage>>({});
   const [customLanguagesRefresh, setCustomLanguagesRefresh] = useState(0);
+  const [showCollabSlide, setShowCollabSlide] = useState(false);
+  const [joinRoomId, setJoinRoomId] = useState('');
+  const [joinError, setJoinError] = useState('');
+  const [isJoining, setIsJoining] = useState(false);
 
   // Get current active file
   const activeFile = files.find(f => f.id === activeFileId) || files[0];
@@ -682,6 +686,15 @@ export default function Home() {
     URL.revokeObjectURL(url);
   };
 
+  const handleJoinRoom = () => {
+    const roomId = joinRoomId.trim();
+    if (!roomId) return;
+
+    // Navigate directly to the room - server will create it if it doesn't exist
+    // This is the standard approach for collaborative editors
+    window.location.href = `/editor/${roomId}`;
+  };
+
   return (
     <div className="min-h-screen bg-white dark:bg-black text-black dark:text-white transition-colors main-page" style={{ backgroundColor: 'var(--background)', color: 'var(--foreground)' }}>
       {/* Header */}
@@ -695,10 +708,7 @@ export default function Home() {
           </div>
           <div className="flex items-center gap-1 sm:gap-2 lg:gap-4 xl:gap-6">
             <div
-              onClick={() => {
-                const roomId = uuidv4().slice(0, 8);
-                window.location.href = `/editor/${roomId}`;
-              }}
+              onClick={() => setShowCollabSlide(true)}
               className="connect-button-override"
               style={{
                 display: 'flex',
@@ -760,6 +770,99 @@ export default function Home() {
           </div>
         </div>
       </header>
+
+      {/* Collaboration Slide */}
+      {showCollabSlide && (
+        <div 
+          className="absolute z-50 overflow-hidden"
+          style={{
+            top: '70px', // Position below header
+            right: '20px', // Align with Connect button position
+            transition: 'transform 0.3s ease-out',
+            width: 'max-content'
+          }}
+        >
+          <div 
+            className="px-6 py-6 shadow-lg rounded-lg"
+            style={{
+              backgroundColor: 'var(--background)',
+              border: `1px solid ${theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`
+            }}
+          >
+            <div className="w-72">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold" style={{ color: 'var(--foreground)', fontFamily: 'Poppins, sans-serif' }}>
+                  Collaborate
+                </h3>
+                <button
+                  onClick={() => setShowCollabSlide(false)}
+                  className="p-1 hover:opacity-70 transition-opacity"
+                  style={{ color: 'var(--foreground)' }}
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
+                </button>
+              </div>
+              
+              <div className="space-y-3">
+                {/* Create Room */}
+                <button
+                  onClick={() => {
+                    const roomId = uuidv4().slice(0, 8);
+                    window.location.href = `/editor/${roomId}`;
+                  }}
+                  className="w-full p-3 rounded-lg text-left hover:opacity-80 transition-opacity"
+                  style={{
+                    backgroundColor: '#8141e6',
+                    color: '#ffffff'
+                  }}
+                >
+                  <div className="font-medium text-sm">Create New Room</div>
+                  <div className="text-xs opacity-80">Start a new collaborative session</div>
+                </button>
+
+                {/* OR Divider */}
+                <div className="flex items-center gap-3 py-2">
+                  <hr className="flex-1" style={{ borderColor: theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' }} />
+                  <span className="text-xs font-medium" style={{ color: 'var(--foreground)', opacity: 0.6 }}>OR</span>
+                  <hr className="flex-1" style={{ borderColor: theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' }} />
+                </div>
+
+                {/* Join Room */}
+                <div className="space-y-2">
+                  <input
+                    type="text"
+                    value={joinRoomId}
+                    onChange={(e) => setJoinRoomId(e.target.value.toUpperCase())}
+                    placeholder="Enter room code..."
+                    className="w-full px-3 py-2 text-sm rounded-lg outline-none"
+                    style={{
+                      backgroundColor: theme === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
+                      color: 'var(--foreground)',
+                      border: `1px solid ${theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`
+                    }}
+                    maxLength={8}
+                  />
+                  
+                  <button
+                    onClick={handleJoinRoom}
+                    disabled={!joinRoomId.trim()}
+                    className="w-full p-3 rounded-xl text-sm font-medium transition-all disabled:opacity-50 create-room-border"
+                    style={{
+                      backgroundColor: theme === 'dark' ? '#000000' : '#ffffff',
+                      color: '#8141e6'
+                    }}
+                  >
+                    Join Room
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Main Content */}
       <div className="h-[calc(100vh-100px)] sm:h-[calc(100vh-108px)] lg:h-[calc(100vh-120px)]">

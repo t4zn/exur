@@ -904,6 +904,17 @@ html {
   box-shadow: none !important;
 }
 
+/* Purple hover effect for resizable panel dots */
+.resize-handle-visible:hover div div {
+  background-color: #8141e6 !important;
+  opacity: 1 !important;
+}
+
+/* Create room button purple border */
+.create-room-border {
+  border: 2px solid #8141e6 !important;
+}
+
 /* Purple success messages */
 .text-green-600 {
   color: #8141e6 !important;

@@ -11,6 +11,7 @@ interface LanguageSelectorProps {
   onViewLanguage?: (languageId: string) => void;
   onDeleteLanguage?: (languageId: string) => void;
   refreshTrigger?: number;
+  onToggle?: (isOpen: boolean) => void;
 }
 
 const languages = [
@@ -52,7 +53,7 @@ const languages = [
   { value: 'visual_basic', label: 'Visual Basic', id: 84, icon: 'devicon-visualbasic-plain' }
 ];
 
-export default function LanguageSelector({ language, onChange, onViewLanguage, onDeleteLanguage, refreshTrigger }: LanguageSelectorProps) {
+export default function LanguageSelector({ language, onChange, onViewLanguage, onDeleteLanguage, refreshTrigger, onToggle }: LanguageSelectorProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [customLanguages, setCustomLanguages] = useState<Record<string, { name: string; extension: string; keywords: Record<string, string> }>>({});
