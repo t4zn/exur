@@ -134,10 +134,10 @@ export default function LanguageSelector({ language, onChange, onViewLanguage, o
   };
 
   return (
-    <div className="relative" ref={dropdownRef}>
+    <div className="relative min-w-[100px] sm:min-w-[120px]" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="px-2 sm:px-3 py-2 sm:py-3 font-medium uppercase tracking-wider text-xs sm:text-sm flex items-center gap-1.5 sm:gap-2 transition-all duration-200 hover:opacity-80"
+        className="w-full px-2 sm:px-3 py-2 sm:py-3 font-medium uppercase tracking-wider text-xs sm:text-sm flex items-center gap-1.5 sm:gap-2 transition-all duration-200 hover:opacity-80"
         style={{
           backgroundColor: 'var(--background)',
           color: 'var(--foreground)'
@@ -188,9 +188,14 @@ export default function LanguageSelector({ language, onChange, onViewLanguage, o
 
       {isOpen && (
         <div
-          className="absolute top-full left-0 right-0 max-h-80 overflow-hidden z-50 animate-fade-in"
+          className="absolute top-full right-0 w-[220px] max-h-80 overflow-hidden z-50 animate-fade-in"
           style={{
-            backgroundColor: 'var(--background)'
+            backgroundColor: 'var(--background)',
+            boxShadow: theme === 'dark'
+              ? '0 0 0 1px rgba(255, 255, 255, 0.1), 0 4px 6px -1px rgba(255, 255, 255, 0.1), 0 2px 4px -1px rgba(255, 255, 255, 0.06)'
+              : '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
+            borderRadius: '8px',
+            border: theme === 'dark' ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid rgba(0, 0, 0, 0.1)'
           }}
         >
           {/* Search Input */}
@@ -229,8 +234,8 @@ export default function LanguageSelector({ language, onChange, onViewLanguage, o
                       onClick={() => handleSelect(id)}
                       className="flex-1 px-4 py-2 text-left hover:opacity-70 transition-all duration-150 font-medium text-sm hover:translate-x-1 flex items-center gap-2"
                       style={{
-                        backgroundColor: id === language ? 'var(--foreground)' : 'var(--background)',
-                        color: id === language ? 'var(--background)' : 'var(--foreground)'
+                        backgroundColor: id === language ? '#8141e6' : 'var(--background)',
+                        color: id === language ? '#ffffff' : 'var(--foreground)'
                       }}
                     >
                       <span style={{ fontSize: '14px', fontWeight: 'bold' }}>&lt;/&gt;</span>
@@ -289,8 +294,8 @@ export default function LanguageSelector({ language, onChange, onViewLanguage, o
                     onClick={() => handleSelect(lang.value)}
                     className="w-full px-4 py-2 text-left hover:opacity-70 transition-all duration-150 font-medium text-sm hover:translate-x-1 flex items-center gap-2 justify-between"
                     style={{
-                      backgroundColor: lang.value === language ? 'var(--foreground)' : 'var(--background)',
-                      color: lang.value === language ? 'var(--background)' : 'var(--foreground)'
+                      backgroundColor: lang.value === language ? '#8141e6' : 'var(--background)',
+                      color: lang.value === language ? '#ffffff' : 'var(--foreground)'
                     }}
                   >
                     <div className="flex items-center gap-2">
@@ -329,10 +334,10 @@ export default function LanguageSelector({ language, onChange, onViewLanguage, o
                     </div>
                     {lang.isNew && (
                       <span
-                        className="px-1 py-0.5 font-medium rounded opacity-70"
+                        className="px-1 py-0.5 font-medium rounded"
                         style={{
-                          backgroundColor: 'var(--foreground)',
-                          color: 'var(--background)',
+                          backgroundColor: lang.value === language ? '#ffffff' : '#8141e6',
+                          color: lang.value === language ? '#8141e6' : '#ffffff',
                           fontSize: '9px'
                         }}
                       >

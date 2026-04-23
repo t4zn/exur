@@ -52,13 +52,13 @@ body {
 
 /* Selection styling */
 ::selection {
-  background: #000000;
+  background: #8141e6;
   color: #ffffff;
 }
 
 .dark ::selection {
-  background: #ffffff;
-  color: #000000;
+  background: #8141e6;
+  color: #ffffff;
 }
 
 /* Monaco Editor custom styling */
@@ -857,4 +857,70 @@ html {
 /* Override the global border:none for the collaborative editor borders */
 .collab-border-override {
   border: 1px solid rgba(128, 128, 128, 0.15) !important;
+}
+
+/* Override the global border:none for the Connect button */
+.connect-button-override {
+  border: 2px solid #8141e6 !important;
+  background-color: #ffffff !important;
+}
+
+/* Dark mode styling for Connect button */
+.dark .connect-button-override {
+  background-color: #000000 !important;
+}
+
+/* Purple text cursor for main page only (not collaborative editor) */
+.main-page .monaco-editor .cursor {
+  border-left: 2px solid #8141e6 !important;
+}
+
+.main-page .monaco-editor .cursor-line-style {
+  border-left-color: #8141e6 !important;
+}
+
+/* Purple input box borders */
+.input-purple-border {
+  border: 2px solid #8141e6 !important;
+}
+
+.input-purple-border:focus {
+  border: 2px solid #8141e6 !important;
+  box-shadow: 0 0 0 3px rgba(129, 65, 230, 0.1) !important;
+}
+
+/* Chat input area purple border */
+.chat-input-border {
+  border: 2px solid #8141e6 !important;
+}
+
+/* Remove purple border from input boxes in collaborative editor only */
+.collaborative-page .input-purple-border {
+  border: none !important;
+}
+
+.collaborative-page .input-purple-border:focus {
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Purple success messages */
+.text-green-600 {
+  color: #8141e6 !important;
+}
+
+.text-green-500 {
+  color: #8141e6 !important;
+}
+
+.bg-green-100 {
+  background-color: rgba(129, 65, 230, 0.1) !important;
+}
+
+.bg-green-50 {
+  background-color: rgba(129, 65, 230, 0.05) !important;
+}
+
+.border-green-200 {
+  border-color: rgba(129, 65, 230, 0.3) !important;
 }

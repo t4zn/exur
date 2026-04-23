@@ -186,12 +186,12 @@ export default function ChatPanel({
                       {/* Reply reference preview */}
                       {msg.replyTo && (
                         <div className="flex items-center gap-1 mb-1 px-2.5 py-1 rounded-lg text-[10px]" style={{
-                          backgroundColor: theme === 'dark' ? 'rgba(251,191,36,0.1)' : 'rgba(251,191,36,0.08)',
+                          backgroundColor: theme === 'dark' ? 'rgba(129,65,230,0.15)' : 'rgba(129,65,230,0.1)',
                           color: 'var(--foreground)', opacity: 0.7,
-                          borderLeft: '2px solid #fbbf24',
+                          borderLeft: '2px solid #8141e6',
                         }}>
                           <div className="flex flex-col min-w-0">
-                            <span className="font-semibold text-[9px]" style={{ color: '#fbbf24' }}>{msg.replyTo.username}</span>
+                            <span className="font-semibold text-[9px]" style={{ color: '#8141e6' }}>{msg.replyTo.username}</span>
                             <span className="truncate">{msg.replyTo.message}</span>
                           </div>
                         </div>
@@ -200,9 +200,9 @@ export default function ChatPanel({
                       {/* Bubble */}
                       <div className="px-3 py-1.5 rounded-xl text-xs leading-relaxed break-words cursor-default" style={{
                         backgroundColor: mine
-                          ? (theme === 'dark' ? 'rgba(251,191,36,0.25)' : 'rgba(251,191,36,0.1)')
-                          : (theme === 'dark' ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)'),
-                        color: 'var(--foreground)',
+                          ? '#8141e6'
+                          : (theme === 'dark' ? '#ffffff' : 'rgba(128,128,128,0.15)'),
+                        color: mine ? '#ffffff' : (theme === 'dark' ? '#000000' : 'var(--foreground)'),
                         borderRadius: mine ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
                       }}>
                         {msg.message}
@@ -244,12 +244,12 @@ export default function ChatPanel({
         {/* Reply preview bar */}
         {replyingTo && (
           <div className="flex items-center justify-between mb-2 px-3 py-1.5 rounded-lg text-[10px]" style={{
-            backgroundColor: theme === 'dark' ? 'rgba(251,191,36,0.15)' : 'rgba(251,191,36,0.08)',
+            backgroundColor: theme === 'dark' ? 'rgba(129,65,230,0.15)' : 'rgba(129,65,230,0.1)',
             color: 'var(--foreground)',
-            borderLeft: '2px solid #fbbf24',
+            borderLeft: '2px solid #8141e6',
           }}>
             <div className="flex flex-col min-w-0 flex-1">
-              <span className="font-semibold text-[9px]" style={{ color: '#fbbf24' }}>
+              <span className="font-semibold text-[9px]" style={{ color: '#8141e6' }}>
                 Replying to {replyingTo.username === currentUsername ? 'yourself' : replyingTo.username}
               </span>
               <span className="truncate opacity-70">{replyingTo.message}</span>
@@ -262,12 +262,16 @@ export default function ChatPanel({
           </div>
         )}
 
-        <div className="flex items-center gap-2 rounded-2xl px-3 py-2" style={{
+        <div className="flex items-center gap-2 rounded-full px-3 py-2 chat-input-border" style={{
           backgroundColor: theme === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
-          border: `2px solid #8141e6`,
         }}>
           <button onClick={() => setShowEmojiPicker(!showEmojiPicker)} className="flex-shrink-0 p-1 rounded transition-opacity hover:opacity-70" style={{ color: 'var(--foreground)', opacity: 0.5 }} aria-label="Emoji">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><path d="M8 14s1.5 2 4 2 4-2 4-2" /><line x1="9" y1="9" x2="9.01" y2="9" /><line x1="15" y1="9" x2="15.01" y2="9" /></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="12" cy="12" r="10" />
+              <path d="M8 14s1.5 2 4 2 4-2 4-2" />
+              <circle cx="9" cy="9" r="0.5" fill="currentColor" />
+              <circle cx="15" cy="9" r="0.5" fill="currentColor" />
+            </svg>
           </button>
 
           <textarea

@@ -480,7 +480,7 @@ export default function CollaborativeEditorPage({ params }: { params: Promise<{ 
   const chatProps = { messages: chatMessages, onSend: emitChatMessage, onReaction: emitChatReaction, onDelete: emitChatDelete, onTyping: emitChatTyping, currentUsername: myInfo?.username ?? '', currentSocketId: myInfo?.socketId, typingUsers, reactions: chatReactions, deletedMessages: deletedMsgIds };
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: 'var(--background)', color: 'var(--foreground)' }}>
+    <div className="min-h-screen collaborative-page" style={{ backgroundColor: 'var(--background)', color: 'var(--foreground)' }}>
       {/* Header */}
       <header className="px-3 sm:px-4 lg:px-8 py-2 sm:py-3 lg:py-4" style={{ backgroundColor: 'var(--background)' }}>
         <div className="flex items-center justify-between">

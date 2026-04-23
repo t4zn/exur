@@ -683,7 +683,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-white dark:bg-black text-black dark:text-white transition-colors" style={{ backgroundColor: 'var(--background)', color: 'var(--foreground)' }}>
+    <div className="min-h-screen bg-white dark:bg-black text-black dark:text-white transition-colors main-page" style={{ backgroundColor: 'var(--background)', color: 'var(--foreground)' }}>
       {/* Header */}
       <header className="px-3 sm:px-4 lg:px-8 py-2 sm:py-3 lg:py-4" style={{ backgroundColor: 'var(--background)' }}>
         <div className="flex items-center justify-between">
@@ -694,26 +694,37 @@ export default function Home() {
             <Image src="/logo.svg" alt="Exur" width={120} height={40} className="h-6 sm:h-7 lg:h-9 xl:h-10 w-auto" />
           </div>
           <div className="flex items-center gap-1 sm:gap-2 lg:gap-4 xl:gap-6">
-            <button
+            <div
               onClick={() => {
                 const roomId = uuidv4().slice(0, 8);
                 window.location.href = `/editor/${roomId}`;
               }}
-              className="flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-200 hover:opacity-90 hover:scale-105 shadow-lg hover:shadow-xl"
+              className="connect-button-override"
               style={{
-                backgroundColor: '#8141e6',
-                color: '#ffffff',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '10px 20px',
+                color: '#8141e6',
+                border: '2px solid #8141e6',
+                borderRadius: '50px',
+                fontSize: '14px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                fontFamily: 'Poppins, sans-serif'
               }}
-              aria-label="Start collaborative session"
+              onMouseEnter={(e) => {
+                e.currentTarget.style.opacity = '0.8';
+                e.currentTarget.style.transform = 'scale(1.02)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.opacity = '1';
+                e.currentTarget.style.transform = 'scale(1)';
+              }}
             >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="hidden sm:block">
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                <circle cx="9" cy="7" r="4" />
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-              </svg>
               Connect
-            </button>
+            </div>
             <LanguageSelector
               language={language}
               onChange={handleLanguageChange}

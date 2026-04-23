@@ -169,12 +169,11 @@ export default function Output({
                 }
               }}
               placeholder="Enter input..."
-              className="w-full h-full px-3 py-2 text-xs font-mono resize-none rounded-2xl outline-none placeholder:opacity-40"
+              className="w-full h-full px-3 py-2 text-xs font-mono resize-none rounded-2xl outline-none placeholder:opacity-40 input-purple-border"
               style={{
                 backgroundColor: theme === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
                 color: 'var(--foreground)',
-                fontFamily: 'var(--font-geist-mono), monospace',
-                border: `1px solid ${theme === 'dark' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`
+                fontFamily: 'var(--font-geist-mono), monospace'
               }}
             />
           </div>
